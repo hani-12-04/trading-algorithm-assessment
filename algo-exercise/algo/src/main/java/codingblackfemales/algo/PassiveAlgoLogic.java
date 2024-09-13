@@ -40,4 +40,8 @@ public class PassiveAlgoLogic implements AlgoLogic{
         }
 
     }
+    @Override
+    public long evaluate(SimpleAlgoState state, long size) {
+        return 0;
+    }
 }

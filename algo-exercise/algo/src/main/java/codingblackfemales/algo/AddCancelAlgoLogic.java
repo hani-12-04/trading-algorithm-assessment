@@ -53,4 +53,8 @@ public class AddCancelAlgoLogic implements AlgoLogic {
             return new CreateChildOrder(Side.BUY, quantity, price);
         }
     }
+    @Override
+    public long evaluate(SimpleAlgoState state, long size) {
+        return 0;
+    }
 }

@@ -4,8 +4,16 @@ import messages.marketdata.*;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.junit.Assert;
 import org.junit.Test;
+// import uk.co.real_logic.sbe.ir.generated.MessageHeaderDecoder;
+// import uk.co.real_logic.sbe.ir.generated.MessageHeaderEncoder;
+// import messages.marketdata.BookUpdateEncoder;
+// import messages.marketdata.BookUpdateDecoder;
+
 
 import java.nio.ByteBuffer;
+
+// import static com.sun.org.apache.xml.internal.serializer.utils.Utils.messages;
+
 
 public class EncodingDecodingTest {
 
@@ -31,14 +39,14 @@ public class EncodingDecodingTest {
         encoder.instrumentId(123L);
 
         encoder.askBookCount(3)
-                .next().price(100l).size(101l)
-                .next().price(90l).size(200l)
-                .next().price(80l).size(300);
+                .next().price(100L).size(101L)
+                .next().price(90L).size(200L)
+                .next().price(80L).size(300);
 
         encoder.bidBookCount(3)
-                .next().price(110l).size(100)
-                .next().price(210l).size(200)
-                .next().price(310l).size(300);
+                .next().price(110L).size(100)
+                .next().price(210L).size(200)
+                .next().price(310L).size(300);
 
         encoder.instrumentStatus(InstrumentStatus.CONTINUOUS);
         encoder.source(Source.STREAM);
