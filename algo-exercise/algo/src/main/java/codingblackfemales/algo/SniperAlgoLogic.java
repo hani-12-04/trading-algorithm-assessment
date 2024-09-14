@@ -47,10 +47,10 @@ public class SniperAlgoLogic implements AlgoLogic {
             return NoAction;
         }
     }
-    @Override
-    public long evaluate(SimpleAlgoState state, long size) {
-        return 0;
-    }
+   // @Override
+   //public long evaluate(SimpleAlgoState state, long size) {
+    //    return 0;
+    //}
 }
 // goal: sniper algo aims to "snipe" the best ask price, so tryig to buy as much as possible at the lowest price(the best ask)
 // until it has 5 child orders.

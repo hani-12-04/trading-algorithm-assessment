@@ -30,7 +30,7 @@ public class MyAlgoLogic implements AlgoLogic {
         AskLevel bestAsk = state.getAskAt(0); // the lowest ask price - the price sellers are asking for
 
         // setting a threshold price below which we are willing to buy
-        long buyThreshold = 100;  // the max price we are willing to buy shares
+        long buyThreshold = 200;  // the max price we are willing to buy shares
 
         // Checking if we hold no shares, and the current ask price is low enough to buy
         if (position == 0 && bestAsk.price < buyThreshold) {
@@ -51,7 +51,7 @@ public class MyAlgoLogic implements AlgoLogic {
 
             // Reset position after selling
             long sharesToSell = position;
-            long position = 0;
+             position = 0;
 
             return new CreateChildOrder(Side.SELL, sharesToSell, bestBid.price);
         } else {
@@ -60,10 +60,10 @@ public class MyAlgoLogic implements AlgoLogic {
         return NoAction.NoAction; // no buy or sell conditions are met, take no action
     }
 
-    @Override
-    public long evaluate(SimpleAlgoState state, long size) {
-        return 0;
-    }
+    //@Override
+   // public long evaluate(SimpleAlgoState state, long size) {
+    //    return 0;
+    //}
 }
 
 
