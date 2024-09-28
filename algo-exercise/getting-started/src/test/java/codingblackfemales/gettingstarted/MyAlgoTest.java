@@ -1,84 +1,45 @@
 package codingblackfemales.gettingstarted;
 
-import codingblackfemales.container.Actioner;
-import codingblackfemales.container.AlgoContainer;
-import codingblackfemales.container.RunTrigger;
-import codingblackfemales.sequencer.DefaultSequencer;
-import codingblackfemales.sequencer.Sequencer;
-import codingblackfemales.sequencer.consumer.LoggingConsumer;
-import codingblackfemales.sequencer.marketdata.SequencerTestCase;
-import codingblackfemales.sequencer.net.TestNetwork;
-import codingblackfemales.service.MarketDataService;
-import codingblackfemales.service.OrderService;
-import messages.marketdata.*;
-import org.agrona.concurrent.UnsafeBuffer;
+import codingblackfemales.algo.AlgoLogic;
 import org.junit.Test;
-
-import java.nio.ByteBuffer;
 
 import static org.junit.Assert.assertEquals;
 
-public class MyAlgoTest extends SequencerTestCase {
 
-    private final MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
-    private final BookUpdateEncoder encoder = new BookUpdateEncoder();
-
-    private AlgoContainer container;
+/**
+ * This test is designed to check your algo behavior in isolation of the order book.
+ *
+ * You can tick in market data messages by creating new versions of createTick() (ex. createTick2, createTickMore etc..)
+ *
+ * You should then add behaviour to your algo to respond to that market data by creating or cancelling child orders.
+ *
+ * When you are comfortable you algo does what you expect, then you can move on to creating the MyAlgoBackTest.
+ *
+ */
+public class MyAlgoTest extends AbstractAlgoTest {
 
     @Override
-    public Sequencer getSequencer() {
-        final TestNetwork network = new TestNetwork();
-        final Sequencer sequencer = new DefaultSequencer(network);
-
-        final RunTrigger runTrigger = new RunTrigger();
-        final Actioner actioner = new Actioner(sequencer);
-
-        container = new AlgoContainer(new MarketDataService(runTrigger), new OrderService(runTrigger), runTrigger, actioner);
-        //set my algo logic
-        container.setLogic(new MyAlgoLogic());
-
-        network.addConsumer(new LoggingConsumer());
-        network.addConsumer(container.getMarketDataService());
-        network.addConsumer(container.getOrderService());
-        network.addConsumer(container);
-
-        return sequencer;
+    public AlgoLogic createAlgoLogic() {
+        //this adds your algo logic to the container classes
+        return new MyAlgoLogic();
     }
 
-    private UnsafeBuffer createSampleMarketDataTick(){
-        final ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024);
-        final UnsafeBuffer directBuffer = new UnsafeBuffer(byteBuffer);
+    @Test
+    public void testMaxOrderLimit() throws Exception {
+        // create a sample market data tick to test the maxOrder Limit of 10
+        send(createTick());
 
-        //write the encoded output to the direct buffer
-        encoder.wrapAndApplyHeader(directBuffer, 0, headerEncoder);
-
-        //set the fields to desired values
-        encoder.venue(Venue.XLON);
-        encoder.instrumentId(123L);
-
-        encoder.askBookCount(3)
-                .next().price(100L).size(101L)
-                .next().price(110L).size(200L)
-                .next().price(115L).size(5000L);
-
-        encoder.bidBookCount(3)
-                .next().price(98L).size(100L)
-                .next().price(95L).size(200L)
-                .next().price(91L).size(300L);
-
-        encoder.instrumentStatus(InstrumentStatus.CONTINUOUS);
-        encoder.source(Source.STREAM);
-
-        return directBuffer;
+        // Assert that no more than 10 orders were created
+        assertEquals(container.getState().getChildOrders().size(), 10);
     }
 
     @Test
     public void testDispatchThroughSequencer() throws Exception {
 
         //create a sample market data tick....
-        send(createSampleMarketDataTick());
+        send(createTick());
 
         //simple assert to check we had 3 orders created
-        assertEquals(container.getState().getChildOrders().size(), 3);
+        assertEquals(container.getState().getChildOrders().size(), 10);
     }
 }

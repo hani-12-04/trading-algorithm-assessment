@@ -14,9 +14,11 @@ export type MarketDepthRow = {
 };
 
 const byLevel = (
-  { level: levelA }: MarketDepthRow,
+ { level: levelA }: MarketDepthRow,
   { level: levelB }: MarketDepthRow
 ) => (levelA > levelB ? 1 : -1);
+
+
 
 class MarketPriceLevelStore {
   #data: Map<string, MarketDepthRow> = new Map();
@@ -38,6 +40,7 @@ class MarketPriceLevelStore {
       bid: vuuRow[this.#columnMap.bid] as number,
       offer: vuuRow[this.#columnMap.offer] as number,
       offerQuantity: vuuRow[this.#columnMap.offerQuantity] as number,
+
     };
   };
 
