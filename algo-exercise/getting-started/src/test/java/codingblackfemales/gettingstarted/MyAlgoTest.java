@@ -1,9 +1,14 @@
 package codingblackfemales.gettingstarted;
 
+import codingblackfemales.action.CancelChildOrder;
+import codingblackfemales.action.NoAction;
+import codingblackfemales.action.Action;
 import codingblackfemales.algo.AlgoLogic;
+import codingblackfemales.sotw.marketdata.BidLevel;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -25,21 +30,55 @@ public class MyAlgoTest extends AbstractAlgoTest {
     }
 
     @Test
-    public void testMaxOrderLimit() throws Exception {
-        // create a sample market data tick to test the maxOrder Limit of 10
-        send(createTick());
+    public void testBidPriceWithinLimit() throws Exception {
+        //Simulate a tick where the price exceeds the limit
+        send(createTick()); // does this tick update the market price?
 
-        // Assert that no more than 10 orders were created
-        assertEquals(container.getState().getChildOrders().size(), 10);
+        // Retrieve the updated bid and ask levels
+        BidLevel bestBid = container.getState().getBidAt(0); // Highest bid price
+
+        // Check if the bid price now exceeds the price limit
+        long bidPrice = bestBid.price;
+        assertTrue(bidPrice >= 100); // Assuming price limit is 99.00
     }
 
     @Test
-    public void testDispatchThroughSequencer() throws Exception {
+    public void testEvaluateNoActionWhenNoConditionsAreMet() throws Exception {
+        send(createTick());
 
+        Action action = createAlgoLogic().evaluate(container.getState());
+
+        //simple assert to check if no conditions are met, there's no action returned
+        assertEquals(NoAction.NoAction, action);
+    }
+
+    @Test
+    public void testMaxActiveBuyOrdersLimit() throws Exception {
         //create a sample market data tick....
         send(createTick());
 
-        //simple assert to check we had 3 orders created
-        assertEquals(container.getState().getChildOrders().size(), 10);
+        //simple assert to check we only create 10 active orders (maxOrders = 10)
+        assertEquals(container.getState().getActiveChildOrders().size(), 10);
+    }
+
+    @Test
+    public void testCancelBuyOrdersWhenPriceExceedsLimit() throws Exception {
+        MyAlgoLogic algo = new MyAlgoLogic();
+
+        // Step 1: Send ticks to simulate placing 10 buy orders below the price limit
+        send(createTick());
+
+        // Assert that 10 buy orders were placed
+        assertEquals(10, container.getState().getActiveChildOrders().size());
+
+        // Step 2: Simulate a tick where the price exceeds the limit
+        send(createTick());
+
+        // Evaluate the algo logic after the price exceeds the limit
+        Action action = algo.evaluate(container.getState());
+
+        // Assert that the algo responds by cancelling a buy order
+        assertEquals(true, action instanceof CancelChildOrder);
+
     }
 }
