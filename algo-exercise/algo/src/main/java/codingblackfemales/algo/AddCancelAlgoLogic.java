@@ -37,6 +37,7 @@ public class AddCancelAlgoLogic implements AlgoLogic {
 
             final var option = activeOrders.stream().findFirst();
 
+
             if (option.isPresent()) {
                 var childOrder = option.get();
                 logger.info("[ADDCANCELALGO] Cancelling order:" + childOrder);
