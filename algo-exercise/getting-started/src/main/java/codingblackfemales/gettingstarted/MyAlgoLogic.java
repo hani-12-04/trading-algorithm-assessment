@@ -23,13 +23,11 @@ public class MyAlgoLogic implements AlgoLogic {
     // constraints for the price limit
     private static final double priceLimit = 98.00;
     private static final double sellLimit = 100.00; // sell when the price reaches £105
-
     private static final int maxOrders = 10; // max allowed orders in the orderbook
     private static final int quantity = 50; // quantity for each order
-
     private static boolean clearActiveOrders = false; // when enabled will clear all active orders
-    private static boolean shouldBuy = false; // when enabled, place buy orders
-    private static boolean shouldSell = false; // when enabled, sell orders
+    private static boolean shouldBuy = true; // when enabled, place buy orders
+    private static boolean shouldSell = false; // when enabled, place sell orders
 
     @Override
     public Action evaluate(SimpleAlgoState state) {
@@ -59,63 +57,96 @@ public class MyAlgoLogic implements AlgoLogic {
         long askPrice = bestAsk.price; // the lowest ask price
 
 
-//        if (clearActiveOrders == true && activeOrdersCount > 0) {
-        // go over order book and cancel when a cancellable order is found
-//            for (ChildOrder order : activeOrders) {
-//                // cancel order if it's above the price limit
-//                if (bidPrice >= priceLimit) {
-//                    logger.info("[MYALGO] Price exceeded limit. Cancelling all buy orders");
-//                    if (order != null) {
-//                        logger.info("[ADDCANCELALGO] Cancelling order:" + order);
-//                        return new CancelChildOrder(order);
-//                   }
-//                }
-//            }
-//        } else if (clearActiveOrders == true && activeOrdersCount == 0) {
-//            // Stop cancelling orders and now place sell orders
-//            clearActiveOrders = false;
-//            shouldBuy = false;
-//        }
-
-        // Buy Logic
-        if (bidPrice >= sellLimit) {
+        // ---- Setting shouldBuy Logic ---- //
+        // Set shouldBuy flag if the ask price is below or equal to the priceLimit
+        if (askPrice <= priceLimit && !shouldSell && !clearActiveOrders) {
             shouldBuy = true;
-            logger.info("[MYALGO] The current price is greater than sell limit. Placing buy order");
+            shouldSell = false;  // Ensure mutual exclusivity
+            logger.info("[MYALGO] Setting shouldBuy to true. Ask price is below or equal to the price limit.");
+        } else {
+            shouldBuy = false;
         }
-        if (askPrice >= priceLimit) {
+
+        // ---- Setting shouldSell Logic ---- //
+        // Set shouldSell flag if the bid price is greater than or equal to the sellLimit
+        if (bidPrice >= sellLimit && !shouldBuy && !clearActiveOrders) {
             shouldSell = true;
-            logger.info("[MYALGO] The current ask price is greater the price limit. Placing sell order");
+            shouldBuy = false;  // Ensure mutual exclusivity
+            logger.info("[MYALGO] Setting shouldSell to true. Bid price is greater than or equal to the sell limit.");
+        } else {
+            shouldSell = false;
         }
-        if (shouldBuy == true && activeOrdersCount < maxOrders) {
-            logger.info("[MYALGO] The current price is below the price limit. Placing buy order");
-            if (activeOrdersCount + 1 >= maxOrders) {
-                clearActiveOrders = true;
+
+        // ---- Cancel Logic inside Buy ---- //
+        if (shouldBuy && activeOrdersCount < maxOrders) {
+            // Check if any buy orders need to be canceled
+            for (ChildOrder order : activeOrders) {
+                if (order.getSide() == Side.BUY && askPrice > priceLimit) {
+                    logger.info("[MYALGO] Ask price exceeded limit. Cancelling buy order: " + order);
+                    return new CancelChildOrder(order);  // Cancel one order at a time
+                }
             }
-            return new CreateChildOrder(Side.BUY, quantity, bidPrice);
-        }
-        // sell if the price exceeds the sell limit
-        if (shouldSell == true && activeOrdersCount < maxOrders) {
-            // FOR TESTING
-            logger.info("[MYALGO] The current price is below the price limit. Placing sell order");
-//            logger.info("[MYALGO]. Placing buy order");
+
+            // If no cancellations, proceed with placing the buy order
+//            if (askPrice <= priceLimit) {
+            logger.info("[MYALGO] The current ask price is below or equal to the price limit. Placing buy order.");
             if (activeOrdersCount + 1 >= maxOrders) {
-                clearActiveOrders = true;
+                logger.info("[MYALGO] Max orders reached. Switching to cancellation mode.");
+                clearActiveOrders = true;  // Start clearing orders when max is reached
+                shouldBuy = false;  // Stop buying once max orders reached
             }
-            return new CreateChildOrder(Side.SELL, quantity, bidPrice);
-        }
-//            if (activeOrdersCount >= maxOrders) {
-//                logger.info("[MYALGO] Max orders created. End Algo");
-//                return NoAction.NoAction;
+            return new CreateChildOrder(Side.BUY, quantity, askPrice);  // Buy at ask price
 //            }
-//            logger.info("[MYALGO] The price exceeds the sell limit. Placing sell order");
-//            return new CreateChildOrder(Side.SELL, quantity, bidPrice);
-//        }
-//        else {
+        }
+        // ---- Cancel Logic inside Sell ---- //
+        if (shouldSell && activeOrdersCount < maxOrders) {
+            // Check if any sell orders need to be canceled
+            for (ChildOrder order : activeOrders) {
+                if (order.getSide() == Side.SELL && bidPrice < sellLimit) {
+                    logger.info("[MYALGO] Bid price fell below sell limit. Cancelling sell order: " + order);
+                    return new CancelChildOrder(order);  // Cancel one order at a time
+                }
+            }
+            // If no cancellations, proceed with placing the sell order
+//            if (bidPrice >= sellLimit) {
+            logger.info("[MYALGO] The current bid price is greater than or equal to the sell limit. Placing sell order.");
+            if (activeOrdersCount + 1 >= maxOrders) {
+                logger.info("[MYALGO] Max orders reached. Switching to cancellation mode.");
+                clearActiveOrders = true;  // Start clearing orders when max is reached
+                shouldSell = false;  // Stop selling once max orders reached
+            }
+            return new CreateChildOrder(Side.SELL, quantity, bidPrice);  // Sell at bid price
+//            }
+        }
+        // ---- Handle Order Cancellations ---- //
+        if (clearActiveOrders && activeOrdersCount > 0) {
+            logger.info("[MYALGO] Clearing active orders.");
+            for (ChildOrder order : activeOrders) {
+                if (order != null) {
+                    logger.info("[MYALGO] Cancelling order: " + order);
+                    return new CancelChildOrder(order);  // Cancel one order at a time
+                }
+            }
+        } else if (clearActiveOrders && activeOrdersCount == 0) {
+            logger.info("[MYALGO] All orders cancelled. Continuing with the opposite action.");
+            clearActiveOrders = false;
+            // Immediately transition to the opposite mode after all orders are cancelled
+            if (shouldBuy == false) {
+                shouldSell = true;  // Start selling
+            } else if (shouldSell == false) {
+                shouldBuy = true;  // Start buying
+            }
+        }
+        if (!shouldBuy && !shouldSell) {
             logger.info("[MYALGO] No conditions met. Take no action");
             return NoAction.NoAction;
-//        }
+        }
+        return NoAction.NoAction;
     }
 }
+
+
+
 
 
 
