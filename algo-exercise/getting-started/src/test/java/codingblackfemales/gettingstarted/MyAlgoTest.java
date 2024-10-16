@@ -1,10 +1,13 @@
 package codingblackfemales.gettingstarted;
 
 import codingblackfemales.action.CancelChildOrder;
+import codingblackfemales.action.CreateChildOrder;
 import codingblackfemales.action.NoAction;
 import codingblackfemales.action.Action;
 import codingblackfemales.algo.AlgoLogic;
+import codingblackfemales.sotw.marketdata.AskLevel;
 import codingblackfemales.sotw.marketdata.BidLevel;
+import messages.order.Side;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -30,36 +33,47 @@ public class MyAlgoTest extends AbstractAlgoTest {
     }
 
     @Test
-    public void testBidPriceWithinLimit() throws Exception {
-        //Simulate a tick where the price exceeds the limit
-        send(createTick()); // does this tick update the market price?
+    public void testDispatchThroughSequencer() throws Exception {
+        // Step 1: Send a tick to simulate the market (only sent once)
+        send(createTick()); // Simulate a tick with default bid and ask prices
 
-        // Retrieve the updated bid and ask levels
+        // Step 2: Retrieve the updated bid and ask levels
         BidLevel bestBid = container.getState().getBidAt(0); // Highest bid price
-
-        // Check if the bid price now exceeds the price limit
+        AskLevel bestAsk = container.getState().getAskAt(0); // Lowest ask price
         long bidPrice = bestBid.price;
+        long askPrice = bestAsk.price;
 
-        assertTrue(bidPrice >= 91); // Assuming price limit is 91.00
-    }
+        // Step 3: Assert that the bid and ask prices are within the expected limits
+        assertTrue(bidPrice >= 91); // assuming 91 as sell limit
+        assertTrue(askPrice <= 115); // assuming 115 as price limit
 
-    @Test
-    public void testEvaluateNoActionWhenNoConditionsAreMet() throws Exception {
-        send(createTick());
-
-//        Action action = new MyAlgoLogic().evaluate(container.getState());
+        // Step 4: Test the algorithm's evaluation for buy orders
         Action action = createAlgoLogic().evaluate(container.getState());
 
-        //simple assert to check if no conditions are met, there's no action returned
+        // Step 5: Assert that no action is taken (NoAction) when conditions are not met
         assertEquals(NoAction.NoAction, action);
-    }
 
-    @Test
-    public void testMaxActiveBuyOrdersLimit() throws Exception {
-        //create a sample market data tick....
-        send(createTick());
+        // Step 6: Simulate the conditions for canceling an order
+//        send(createTick());
 
-        //simple assert to check we only create 10 active orders (maxOrders = 10)
-        assertEquals(container.getState().getActiveChildOrders().size(), 10);
+//        // Step 7: Evaluate the algorithm again after the market change
+//        Action CancelChildOrder = createAlgoLogic().evaluate(container.getState());
+//
+//        // Step 8: Assert that the algorithm returns a CancelChildOrder action when conditions are met
+//        assertEquals(CancelChildOrder, action);
+
+        // Step 9: Check if the algorithm has placed or canceled orders correctly
+        // Check no more than 10 active child orders created at once
+        assertEquals(container.getState().getActiveChildOrders().size(),10); // maxOrders = 10;
+
+        // Step 10: Verify the total number of child orders (active + canceled)
+        assertEquals(container.getState().getChildOrders().size(), 20);
     }
 }
+
+
+
+
+
+
+

@@ -1,17 +1,20 @@
-import React from 'react';
+import React from "react";
 
 interface QuantityCellProps {
   quantity: number;
+  type: 'bid' | 'ask';  // 'bid' or 'ask' to apply styles
 }
 
-//  QuantityCell recieves the quantity value as a prop and decides what to display or do with that value.
+export const QuantityCell = (props: QuantityCellProps) => {
+  const { quantity, type } = props;
 
-// logic to implement:
-// basic function : show the quantity value in the cell.
+  return (
+    <td className={`${type} quantity`}>
+      {quantity}
+    </td>
+  );
+};
 
-// conditional formatting:
-// change how the quantity will be showed based on it's value.
-// so if the quantity if high, i could highlight in green
-// if the quantity is low, i could highlight in red.
+
 
 
