@@ -54,13 +54,13 @@ public class MyAlgoTest extends AbstractAlgoTest {
         assertEquals(NoAction.NoAction, action);
 
         // Step 6: Simulate the conditions for canceling an order
-//        send(createTick());
+        send(createTick());
 
-//        // Step 7: Evaluate the algorithm again after the market change
-//        Action CancelChildOrder = createAlgoLogic().evaluate(container.getState());
-//
-//        // Step 8: Assert that the algorithm returns a CancelChildOrder action when conditions are met
-//        assertEquals(CancelChildOrder, action);
+        // Step 7: Evaluate the algorithm again after the market change
+        Action CancelChildOrder = createAlgoLogic().evaluate(container.getState());
+
+        // Step 8: Assert that the algorithm returns a CancelChildOrder action when conditions are met
+        assertEquals(CancelChildOrder, action);
 
         // Step 9: Check if the algorithm has placed or canceled orders correctly
         // Check no more than 10 active child orders created at once
