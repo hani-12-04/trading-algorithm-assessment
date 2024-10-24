@@ -17,14 +17,33 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
+/**
+ * MyAlgoLogic class implements the AlgoLogic interface to provide a basic algorithm for
+ * placing and cancelling buy and sell orders in response to market conditions.
+ *
+ * This algorithm operates based on a set of defined constraints such as price limits,
+ * maximum active orders, and order quantity.
+ *
+ * The algorithm follows three main stages:
+ * - Buy orders are placed when the ask price is below or equal to the defined price limit.
+ * - Sell orders are placed when the bid price is above or equal to the sell limit.
+ * - Active orders are cancelled when the maximum number of orders is reached.
+ *
+ *  Key features:
+ * - Buy logic is triggered when conditions for placing a buy order (such as price limit and active order count) are met.
+ * - Sell logic is executed based on sell conditions (such as bid price exceeding the sell limit).
+ * - Orders are gradually cancelled when active orders exceed the predefined maximum.
+ * - The algorithm is designed to log all key activities and handle null states or exceptions gracefully.
+ */
+
 public class MyAlgoLogic implements AlgoLogic {
     private static final Logger logger = LoggerFactory.getLogger(MyAlgoLogic.class);
 
-    // constraints for the price limit
-    private static final long priceLimit = 115;
-    private static final long sellLimit = 91; // sell when the price reaches £105
-    private static final int maxOrders = 10; // max allowed orders in the orderbook
-    private static final int quantity = 50; // quantity for each order
+    // constraints
+    private static final long priceLimit = 115; //This is the maximum price we’re willing to buy at
+    private static final long sellLimit = 91; // The price at which we’ll start selling
+    private static final int maxOrders = 10; // The maximum number of active orders allowed
+    private static final int quantity = 50; // The number of units per order
     private static boolean clearActiveOrders = false; // when enabled will clear all active orders
     private static boolean shouldBuy = true; // when enabled, place buy orders
 
@@ -36,26 +55,17 @@ public class MyAlgoLogic implements AlgoLogic {
                 logger.error("[MYALGO] Algo state is null!");
                 return NoAction.NoAction;
             }
+
             // log the current state of the order book
             var orderBookAsString = Util.orderBookToString(state);
             logger.info("[MYALGO] The state of the order book is:\n" + orderBookAsString);
-
-            // Get total order count, with a simple null check
-            if (state.getChildOrders() == null) {
-                logger.warn("[MYALGO] Child orders are null!");
-                return NoAction.NoAction;
-            }
 
             // Retrieve the total Order count
             var totalOrderCount = state.getChildOrders().size();
             logger.info("[MYALGO] Total child orders: " + totalOrderCount);
 
-            // Get active orders count, simple null check
+            // Get active orders count
             List<ChildOrder> activeOrders = state.getActiveChildOrders();
-            if (activeOrders == null) {
-                logger.warn("[MYALGO] Active orders list is null!");
-                return NoAction.NoAction;
-            }
             int activeOrdersCount = activeOrders.size();
             logger.info("[MYALGO] Active child orders: " + activeOrdersCount);
 

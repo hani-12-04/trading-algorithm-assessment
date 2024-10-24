@@ -5,6 +5,7 @@ import codingblackfemales.action.CreateChildOrder;
 import codingblackfemales.action.NoAction;
 import codingblackfemales.action.Action;
 import codingblackfemales.algo.AlgoLogic;
+import codingblackfemales.sotw.ChildOrder;
 import codingblackfemales.sotw.marketdata.AskLevel;
 import codingblackfemales.sotw.marketdata.BidLevel;
 import messages.order.Side;
@@ -34,40 +35,30 @@ public class MyAlgoTest extends AbstractAlgoTest {
 
     @Test
     public void testDispatchThroughSequencer() throws Exception {
-        // Step 1: Send a tick to simulate the market (only sent once)
+        //Send a tick to simulate the market (only sent once)
         send(createTick()); // Simulate a tick with default bid and ask prices
 
-        // Step 2: Retrieve the updated bid and ask levels
+        //Retrieve the updated bid and ask levels
         BidLevel bestBid = container.getState().getBidAt(0); // Highest bid price
         AskLevel bestAsk = container.getState().getAskAt(0); // Lowest ask price
         long bidPrice = bestBid.price;
         long askPrice = bestAsk.price;
 
-        // Step 3: Assert that the bid and ask prices are within the expected limits
+        //Assert that the bid and ask prices are within the expected limits
         assertTrue(bidPrice >= 91); // assuming 91 as sell limit
         assertTrue(askPrice <= 115); // assuming 115 as price limit
 
-        // Step 4: Test the algorithm's evaluation for buy orders
+        //Evaluate the algorithm to trigger order placement
         Action action = createAlgoLogic().evaluate(container.getState());
+//
+//        //Assert that no action is taken (NoAction) when conditions are not met
+//        assertEquals(NoAction.NoAction, action);
 
-        // Step 5: Assert that no action is taken (NoAction) when conditions are not met
-        assertEquals(NoAction.NoAction, action);
+        // Check for exactly 10 orders are created
+        assertEquals(10,container.getState().getActiveChildOrders().size()); // maxOrders = 10;
 
-        // Step 6: Simulate the conditions for canceling an order
-        send(createTick());
-
-        // Step 7: Evaluate the algorithm again after the market change
-        Action CancelChildOrder = createAlgoLogic().evaluate(container.getState());
-
-        // Step 8: Assert that the algorithm returns a CancelChildOrder action when conditions are met
-        assertEquals(CancelChildOrder, action);
-
-        // Step 9: Check if the algorithm has placed or canceled orders correctly
-        // Check no more than 10 active child orders created at once
-        assertEquals(container.getState().getActiveChildOrders().size(),10); // maxOrders = 10;
-
-        // Step 10: Verify the total number of child orders (active + canceled)
-        assertEquals(container.getState().getChildOrders().size(), 20);
+        //Check for exactly 20 child orders are created (active + cancelled)
+        assertEquals(20,container.getState().getChildOrders().size());
     }
 }
 

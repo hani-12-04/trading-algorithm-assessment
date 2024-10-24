@@ -1,46 +1,51 @@
 .MarketDepthPanel {
-  width: 100%;
-  border-collapse: collapse;  /* Ensure borders are merged between cells */
-  margin-top: 20px;
-  border: 1px solid black;  /* Outer border of the table */
+  width: 80%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  border: 1px solid #ddd;
+  font-size: 12px;
 }
 
-/* Add black borders to table header and data cells */
+
+/* Styling for table headers and data cells */
 .MarketDepthPanel th, .MarketDepthPanel td {
   padding: 8px;
   text-align: center;
-  border: 1px solid black;  /* Black border for table cells */
+  border: 1px solid black;
 }
 
-/* Blue background for Bid Quantity only */
+/* Blue background for Bid Quantity */
 .bid.quantity {
   background-color: #007bff;
   color: white;
-  border: 1px solid black;  /* Ensure Bid Quantity cells also have black border */
+  border: 1px solid black;
 }
 
-/* Red background for Ask Quantity only */
+/* Red background for Ask Quantity */
 .ask.quantity {
   background-color: #dc3545;
   color: white;
-  border: 1px solid black;  /* Ensure Ask Quantity cells also have black border */
+  border: 1px solid black;
 }
 
-/* Styling for Price Cell (no background color) */
+/* Styling for Price Cells */
 .price {
   font-weight: bold;
-  border: 1px solid black;  /* Add black border to price cells */
+  border: 1px solid black;
 }
 
-/* Arrow color for price movement */
+/* Arrows for price movement in ArrowCell */
 .arrow {
   margin-left: 8px;
+  font-size: 14px;
 }
 
+/* Green arrow for upward price movement */
 .up {
   color: green;
 }
 
+/* Red arrow for downward price movement */
 .down {
   color: red;
 }

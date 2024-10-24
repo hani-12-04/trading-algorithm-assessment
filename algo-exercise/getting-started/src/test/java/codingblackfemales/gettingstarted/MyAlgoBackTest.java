@@ -14,7 +14,7 @@ import static org.junit.Assert.assertTrue;
  *
  * If your algo adds orders to the book, they will reflect in your market data coming back from the order book.
  *
- * If you cross the srpead (i.e. you BUY an order with a price which is == or > askPrice()) you will match, and receive
+ * If you cross the spread (i.e. you BUY an order with a price which is == or > askPrice()) you will match, and receive
  * a fill back into your order from the order book (visible from the algo in the childOrders of the state object.
  *
  * If you cancel the order your child order will show the order status as cancelled in the childOrders of the state object.
@@ -28,10 +28,6 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
     public AlgoLogic createAlgoLogic() {
         return new MyAlgoLogic();
     }
-
-//    public void setUp() {
-//        container.getState().getChildOrders().clear(); // Clear the list of child orders to reset state
-//    }
 
     @Test
     public void testTotalFilledQuantity() throws Exception {
@@ -84,7 +80,7 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
                 .filter(order -> order.getFilledQuantity() == order.getQuantity())  // Fully filled
                 .count();
 
-        // Find and print the details of each partially filled order
+        // Find and print the details of each fully filled order
         state.getChildOrders().stream()
                 .filter(order -> order.getFilledQuantity() == order.getQuantity())  // Fully filled orders
                 .forEach(order -> {
