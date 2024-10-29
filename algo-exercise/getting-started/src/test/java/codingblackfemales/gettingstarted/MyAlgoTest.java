@@ -48,7 +48,7 @@ public class MyAlgoTest extends AbstractAlgoTest {
         assertTrue(bidPrice >= 91); // assuming 91 as sell limit
         assertTrue(askPrice <= 115); // assuming 115 as price limit
 
-        //Evaluate the algorithm to trigger order placement
+        //Evaluate the algorithm to trigger orders
         Action action = createAlgoLogic().evaluate(container.getState());
 //
 //        //Assert that no action is taken (NoAction) when conditions are not met

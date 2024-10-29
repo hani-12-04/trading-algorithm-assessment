@@ -1,6 +1,6 @@
 import React from 'react';
-// import { useMarketDepthData } from './useMarketDepthData';  // Import the hook
-// import { schemas } from '../../data/algo-schemas';  // Import the schema
+import { useMarketDepthData } from './useMarketDepthData';  // Import the hook
+import { schemas } from '../../data/algo-schemas';  // Import the schema
 import { MarketDepthPanel } from './MarketDepthPanel';
 import './MarketDepthFeature.css';
 
