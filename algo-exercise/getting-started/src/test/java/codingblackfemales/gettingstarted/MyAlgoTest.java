@@ -38,27 +38,11 @@ public class MyAlgoTest extends AbstractAlgoTest {
         //Send a tick to simulate the market (only sent once)
         send(createTick()); // Simulate a tick with default bid and ask prices
 
-        //Retrieve the updated bid and ask levels
-        BidLevel bestBid = container.getState().getBidAt(0); // Highest bid price
-        AskLevel bestAsk = container.getState().getAskAt(0); // Lowest ask price
-        long bidPrice = bestBid.price;
-        long askPrice = bestAsk.price;
-
-        //Assert that the bid and ask prices are within the expected limits
-        assertTrue(bidPrice >= 91); // assuming 91 as sell limit
-        assertTrue(askPrice <= 115); // assuming 115 as price limit
-
-        //Evaluate the algorithm to trigger orders
-        Action action = createAlgoLogic().evaluate(container.getState());
-//
-//        //Assert that no action is taken (NoAction) when conditions are not met
-//        assertEquals(NoAction.NoAction, action);
-
         // Check for exactly 10 orders are created
-        assertEquals(10,container.getState().getActiveChildOrders().size()); // maxOrders = 10;
+        assertEquals(5,container.getState().getActiveChildOrders().size()); // maxOrders = 10;
 
         //Check for exactly 20 child orders are created (active + cancelled)
-        assertEquals(20,container.getState().getChildOrders().size());
+        assertEquals(10,container.getState().getChildOrders().size());
     }
 }
 

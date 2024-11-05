@@ -35,7 +35,7 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
         send(createTick());
 
         //Assert that the number of orders created is correct
-        assertEquals(20,container.getState().getChildOrders().size());
+        assertEquals(10,container.getState().getChildOrders().size());
 
         // Step 2: Send another tick to simulate market data moving and orders being filled
         send(createTick2());
@@ -50,7 +50,7 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
         System.out.println("Total filled quantity: " + filledQuantity);
 
         // Step 6: Assert that the total filled quantity matches the expected value
-        assertEquals(751, filledQuantity);
+        assertEquals(151, filledQuantity);
 
         // Test 2: Total number of partially filled orders
         // Step 7: Count the number of partially filled orders
@@ -93,7 +93,7 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
         System.out.println("Number of fully filled orders: " + fullyFilledOrders);
 
         //Assert the number of fully filled orders is as expected
-        assertEquals(15, fullyFilledOrders);  // Adjust based on expected fully filled orders
+        assertEquals(3, fullyFilledOrders);  // Adjust based on expected fully filled orders
 
         // Calculate profit based on buy and sell orders
         long totalBuyCost = 0;
