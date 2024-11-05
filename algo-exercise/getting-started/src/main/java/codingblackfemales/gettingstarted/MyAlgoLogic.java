@@ -36,6 +36,8 @@ public class MyAlgoLogic implements AlgoLogic {
 
     private int totalBuyOrders = 0; // Tracks total buy orders placed for fallback trigger
 
+    private static final double DEFAULT_VWAP = 100.0; // Default VWAP if no market data is available
+
     private double vwap = 0.0; // Stores calculated VWAP
 
     @Override
@@ -84,33 +86,45 @@ public class MyAlgoLogic implements AlgoLogic {
             double buyThresholdPrice = vwap * VWAP_BUY_THRESHOLD;
             double sellThresholdPrice = vwap * VWAP_SELL_THRESHOLD;
 
-            if (firstTrade) {
-                if(askPrice <= buyThresholdPrice) {
-                    logger.info("[MYALGO] Ask price is below midpoint. Placing BUY order.");
-                    firstTrade = false;  // Switch off first trade flag after the initial buy
-                    totalBuyOrders++;
-                    return new CreateChildOrder(Side.BUY, quantity, askPrice);
-                } if (bidPrice > sellThresholdPrice) {
-                    logger.info("[MYALGO] Bid price is below midpoint. Placing SELL order.");
-                    firstTrade = false;  // Switch off first trade flag after the initial sell
-                    return new CreateChildOrder(Side.SELL, quantity, bidPrice);
-                }
-            } else {
-                buyThresholdPrice = vwap * VWAP_BUY_THRESHOLD;
-                sellThresholdPrice = vwap * VWAP_SELL_THRESHOLD;
-            }
+//            if (firstTrade) {
+//                if(askPrice <= buyThresholdPrice) {
+//                    logger.info("[MYALGO] Ask price is below midpoint. Placing BUY order.");
+//                    firstTrade = false;  // Switch off first trade flag after the initial buy
+//                    totalBuyOrders++;
+//                    return new CreateChildOrder(Side.BUY, quantity, askPrice);
+//                } if (bidPrice > sellThresholdPrice) {
+//                    logger.info("[MYALGO] Bid price is below midpoint. Placing SELL order.");
+//                    firstTrade = false;  // Switch off first trade flag after the initial sell
+//                    return new CreateChildOrder(Side.SELL, quantity, bidPrice);
+//                }
+//            } else {
+//                buyThresholdPrice = vwap * VWAP_BUY_THRESHOLD;
+//                sellThresholdPrice = vwap * VWAP_SELL_THRESHOLD;
+//            }
 
             logger.info("[MYALGO] VWAP: " + vwap + ", Buy Threshold: " + buyThresholdPrice + ", Sell Threshold: " + sellThresholdPrice);
 
             // --- Buy Logic ---
             if (shouldBuy && !clearActiveOrders && activeOrdersCount < maxOrders && askPrice <= BUY_LIMIT_PRICE && askPrice < buyThresholdPrice) {
                 logger.info("[MYALGO] Ask price is below VWAP buy threshold and buy limit price. Placing BUY order.");
-                totalBuyOrders++;
-                if (activeOrdersCount + 1 >= maxOrders || totalBuyOrders >= 13 ) {
+//                totalBuyOrders++;
+//                 || totalBuyOrders >= 13
+                if (activeOrdersCount + 1 >= maxOrders) {
                     clearActiveOrders = true; // Begin canceling orders
                     logger.info("[MYALGO] Reached buy order limit or fallback buy limit of 10. Starting cancellation.");
                 }
                 return new CreateChildOrder(Side.BUY, quantity, askPrice);
+            }
+
+            // ---- Sell Logic ---- //
+            // && bidPrice >= SELL_LIMIT_PRICE
+            if (!shouldBuy && !clearActiveOrders && activeOrdersCount < maxOrders && bidPrice >= SELL_LIMIT_PRICE) {
+                logger.info("[MYALGO] Bid price is greater than or equal to the sell limit. Placing sell order.");
+                if (activeOrdersCount >= maxOrders) {
+                    logger.info("[MYALGO] Max orders reached.End Algo.");
+                    return NoAction.NoAction;
+                }
+                return new CreateChildOrder(Side.SELL, quantity, bidPrice);  // Sell at bid price
             }
 
             // --- Cancel logic before switching to sell mode ---
@@ -126,16 +140,6 @@ public class MyAlgoLogic implements AlgoLogic {
                     }
                 }
             }
-            // --- Sell Logic ---
-            if (!shouldBuy && activeOrdersCount < maxOrders && bidPrice >= SELL_LIMIT_PRICE) {
-                logger.info("[MYALGO] Sell condition met. Placing SELL order.");
-                return new CreateChildOrder(Side.SELL, quantity, bidPrice);
-            }
-            // --- Terminate evaluation if max sell orders reached ---
-            if (!shouldBuy && activeOrdersCount >= maxOrders) {
-                logger.info("[MYALGO] Sell mode max orders reached. Ending cycle.");
-                return NoAction.NoAction; // End cycle
-            }
             logger.info("[MYALGO] End of evaluation cycle.");
             return NoAction.NoAction;
         } catch (Exception e) {
@@ -143,42 +147,64 @@ public class MyAlgoLogic implements AlgoLogic {
             return NoAction.NoAction;
         }
     }
-
- // Initialise VWAP with midpoint between best bid and ask when no actual trades are available
+    // Initialise VWAP based on market data or default value
     private void initialiseVWAP(SimpleAlgoState state) {
-        BidLevel bestBid = state.getBidAt(0);
-        AskLevel bestAsk = state.getAskAt(0);
+        long totalBidQuantity = 0;
+        long totalAskQuantity = 0;
+        long bidPriceQuantitySum = 0;
+        long askPriceQuantitySum = 0;
 
-        if (bestBid != null && bestAsk != null) {
-            vwap = (bestBid.price + bestAsk.price) / 2.0;
-            logger.info("[MYALGO] Initial VWAP set using bid-ask midpoint: " + vwap);
+        int bidLevels = state.getBidLevels();
+        for (int i = 0; i < bidLevels; i++) {
+            BidLevel bid = state.getBidAt(i);
+            if (bid != null) {
+                totalBidQuantity += bid.getQuantity();
+                bidPriceQuantitySum += bid.getPrice() * bid.getQuantity();
+            }
+        }
+
+        int askLevels = state.getAskLevels();
+        for (int i = 0; i < askLevels; i++) {
+            AskLevel ask = state.getAskAt(i);
+            if (ask != null) {
+                totalAskQuantity += ask.getQuantity();
+                askPriceQuantitySum += ask.getPrice() * ask.getQuantity();
+            }
+        }
+
+        long totalQuantity = totalBidQuantity + totalAskQuantity;
+        if (totalQuantity > 0) {
+            vwap = (double) (bidPriceQuantitySum + askPriceQuantitySum) / totalQuantity;
+            logger.info("[MYALGO] VWAP initialized using order book data: " + vwap);
         } else {
-            logger.warn("[MYALGO] Cannot set initial VWAP - bid or ask is null.");
-            vwap = 0.0;  // Default VWAP to 0 if not initialised properly
+            vwap = DEFAULT_VWAP;
+            logger.info("[MYALGO] No market data available. Using default VWAP: " + vwap);
         }
     }
 
-    // Update VWAP based on the order book levels
+    // Update VWAP based on current market data
     private void updateVWAP(SimpleAlgoState state) {
         long totalBidQuantity = 0;
         long totalAskQuantity = 0;
         long bidPriceQuantitySum = 0;
         long askPriceQuantitySum = 0;
 
-        // Aggregate bid levels to calculate volume-weighted VWAP
         int bidLevels = state.getBidLevels();
         for (int i = 0; i < bidLevels; i++) {
             BidLevel bid = state.getBidAt(i);
-            totalBidQuantity += bid.getQuantity();
-            bidPriceQuantitySum += bid.getPrice() * bid.getQuantity();
+            if (bid != null) {
+                totalBidQuantity += bid.getQuantity();
+                bidPriceQuantitySum += bid.getPrice() * bid.getQuantity();
+            }
         }
 
-        // Aggregate ask levels to calculate volume-weighted VWAP
         int askLevels = state.getAskLevels();
         for (int i = 0; i < askLevels; i++) {
             AskLevel ask = state.getAskAt(i);
-            totalAskQuantity += ask.getQuantity();
-            askPriceQuantitySum += ask.getPrice() * ask.getQuantity();
+            if (ask != null) {
+                totalAskQuantity += ask.getQuantity();
+                askPriceQuantitySum += ask.getPrice() * ask.getQuantity();
+            }
         }
 
         long totalQuantity = totalBidQuantity + totalAskQuantity;
@@ -187,13 +213,50 @@ public class MyAlgoLogic implements AlgoLogic {
             logger.info("[MYALGO] VWAP updated based on order book: " + vwap);
         } else {
             logger.warn("[MYALGO] No sufficient market data for VWAP calculation.");
-            // Leave VWAP unchanged or set to 0 if there’s no data to update
-            if (vwap == 0.0) {
-                vwap = 0.0; // Or keep it as the last calculated VWAP if that’s preferable
-            }
         }
     }
 }
+
+
+
+    // Update VWAP based on the order book levels
+//    private void updateVWAP(SimpleAlgoState state) {
+//
+//
+//        long totalBidQuantity = 0;
+//        long totalAskQuantity = 0;
+//        long bidPriceQuantitySum = 0;
+//        long askPriceQuantitySum = 0;
+//
+//        // Aggregate bid levels to calculate volume-weighted VWAP
+//        int bidLevels = state.getBidLevels();
+//        for (int i = 0; i < bidLevels; i++) {
+//            BidLevel bid = state.getBidAt(i);
+//            totalBidQuantity += bid.getQuantity();
+//            bidPriceQuantitySum += bid.getPrice() * bid.getQuantity();
+//        }
+//
+//        // Aggregate ask levels to calculate volume-weighted VWAP
+//        int askLevels = state.getAskLevels();
+//        for (int i = 0; i < askLevels; i++) {
+//            AskLevel ask = state.getAskAt(i);
+//            totalAskQuantity += ask.getQuantity();
+//            askPriceQuantitySum += ask.getPrice() * ask.getQuantity();
+//        }
+//
+//        long totalQuantity = totalBidQuantity + totalAskQuantity;
+//        if (totalQuantity > 0) {
+//            vwap = (double) (bidPriceQuantitySum + askPriceQuantitySum) / totalQuantity;
+//            logger.info("[MYALGO] VWAP updated based on order book: " + vwap);
+//        } else {
+//            logger.warn("[MYALGO] No sufficient market data for VWAP calculation.");
+//            // Leave VWAP unchanged or set to 0 if there’s no data to update
+//            if (vwap == 0.0) {
+//                vwap = 0.0; // Or keep it as the last calculated VWAP if that’s preferable
+//            }
+//        }
+//    }
+//}
 
 
 

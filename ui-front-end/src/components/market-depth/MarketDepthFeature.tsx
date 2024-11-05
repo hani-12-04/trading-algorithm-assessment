@@ -27,6 +27,16 @@ import './MarketDepthFeature.css';
 //   );
 // };
 
+export interface MarketDepthRow {
+    symbolLevel: string;  // Identifier for each row
+    level: number;        // Level in the market depth (e.g., 0, 1, 2, etc.)
+    bid: number;          // Bid price
+    bidQuantity: number;  // Quantity for bid price
+    offer: number;        // Offer price (also called ask price)
+    offerQuantity: number; // Quantity for offer price
+    }
+
+
  export const MarketDepthFeature = () => {
    // Fetch market depth data using the custom hook
    const { marketDepthData } = useMarketDepthData(schemas.prices);

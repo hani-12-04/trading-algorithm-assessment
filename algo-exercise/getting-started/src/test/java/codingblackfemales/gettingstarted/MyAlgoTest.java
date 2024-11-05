@@ -11,6 +11,7 @@ import codingblackfemales.sotw.marketdata.BidLevel;
 import messages.order.Side;
 import org.junit.Test;
 
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -32,17 +33,33 @@ public class MyAlgoTest extends AbstractAlgoTest {
         //this adds your algo logic to the container classes
         return new MyAlgoLogic();
     }
-
     @Test
-    public void testDispatchThroughSequencer() throws Exception {
-        //Send a tick to simulate the market (only sent once)
-        send(createTick()); // Simulate a tick with default bid and ask prices
+    public void testMaxOrdersLimit() throws Exception {
+        // Simulate hitting the max orders limit with initial conditions
+        send(createTick());
+        // Check for exactly 5 active child orders are created
+        assertEquals(5,container.getState().getActiveChildOrders().size());
 
-        // Check for exactly 10 orders are created
-        assertEquals(5,container.getState().getActiveChildOrders().size()); // maxOrders = 10;
+        //Check for exactly 5 child orders are created
+        assertEquals(5,container.getState().getChildOrders().size());
+    }
+    @Test
+    public void testBuyLogicWithHighAsk() throws Exception {
+        send(createTickWithHighAsk());
 
-        //Check for exactly 20 child orders are created (active + cancelled)
-        assertEquals(10,container.getState().getChildOrders().size());
+        // Check that buy orders were created when the ask price was favorable
+        int activeBuys = container.getState().getActiveChildOrders().size();
+        assertTrue("Expected buy orders to be created", activeBuys > 0);
+        assertEquals(5, container.getState().getActiveChildOrders().size()); // Ensuring no more than maxOrders
+    }
+    @Test
+    public void testSellLogicWithLowBid() throws Exception {
+        send(createTickWithLowBid());
+
+        // Check that sell orders were created when the bid price triggered sell conditions
+        int activeSells = container.getState().getActiveChildOrders().size();
+        assertTrue("Expected sell orders to be created", activeSells > 0);
+        assertEquals(5, container.getState().getActiveChildOrders().size()); // Ensuring no more than maxOrders
     }
 }
 
