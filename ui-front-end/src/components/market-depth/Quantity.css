@@ -1,0 +1,43 @@
+.quantity-bar {
+  position: relative;
+  height: 20px;
+  color: white;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  transition: transform 0.3s ease; /* Smooth transition for width changes */
+  border-radius: 4px;
+  padding: 0 5px;
+  overflow: hidden; /* Keeps bar content within bounds */
+}
+
+/* Quantity text centered or aligned right */
+.quantity-bar .quantity-text {
+  position: absolute;
+  transform: translateX(-50%); /* Default centered text */
+  pointer-events: none; /* Prevent interaction with text */
+}
+
+/* Specific alignment for bid quantity text */
+.bid-quantity .quantity-text {
+  right: 5px; /* Align to the right side */
+  transform: translateX(0); /* Override centering */
+}
+
+.ask-quantity .quantity-text {
+  left: 50%;
+  transform: translateX(-50%); /* Center the text */
+}
+
+/* Blue bar for bid quantity, growing from right to left */
+.bid-quantity {
+  background-color: #007bff;
+  transform-origin: right; /* Grow from the right */
+}
+
+/* Red bar for ask quantity, growing from left to right */
+.ask-quantity {
+  background-color: #dc3545;
+  transform-origin: left; /* Default growth from left */
+}
+

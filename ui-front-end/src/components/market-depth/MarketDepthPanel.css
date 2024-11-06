@@ -1,0 +1,53 @@
+.market-depth-container {
+  width: 100%;
+  overflow-x: auto;
+  display: flex;
+  justify-content: center;
+}
+
+.market-depth-table {
+  width: 70%; /* Adjust this to make the table smaller */
+  max-width: 700px; /* Set a maximum width for smaller tables */
+  border-collapse: collapse;
+  margin: 0 auto;
+}
+
+.market-depth-table th,
+.market-depth-table td {
+  border: 1px solid #ddd;
+  padding: 4px; /* Reduced padding for a more compact look */
+  text-align: center;
+  font-size: 12px;
+}
+
+.market-depth-table th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+
+/* Styling for the bid and ask quantity bars */
+.quantity-bar {
+  position: relative;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  color: white;
+  font-weight: bold;
+}
+
+.bid-quantity .quantity-bar {
+  background-color: #007bff;
+}
+
+.ask-quantity .quantity-bar {
+  background-color: #dc3545;
+}
+
+.quantity-bar span {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+
+
