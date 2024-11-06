@@ -32,13 +32,13 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
     @Test
     public void testTotalFilledQuantity() throws Exception {
         // Step 1: Send initial market tick to create and fill some orders
-        send(createTick());
+        send(createTick3());
 
         //Assert that the number of orders created is correct
         assertEquals(10,container.getState().getChildOrders().size());
 
         // Step 2: Send another tick to simulate market data moving and orders being filled
-        send(createTick2());
+        send(createTick4());
 
         // Step 3: Get the current state of orders
         var state = container.getState();
