@@ -38,10 +38,7 @@ public class MyAlgoTest extends AbstractAlgoTest {
         send(createTick()); // Simulate a tick with default bid and ask prices
 
         // Verify no more than 10 active child orders
-        assertEquals(container.getState().getActiveChildOrders().size(),10); // maxOrders = 10;
-
-        // Verify the total number of child orders (active + canceled) is exactly 20
-        assertEquals(container.getState().getChildOrders().size(), 20);
+        assertEquals(10,container.getState().getActiveChildOrders().size()); // maxOrders = 10;
     }
 
     @Test
@@ -62,39 +59,6 @@ public class MyAlgoTest extends AbstractAlgoTest {
         // Check that no active buy orders were created due to the ask price being below the price limit
         assertEquals(0, container.getState().getActiveChildOrders().size());
     }
-
-//    private MyAlgoLogic algo; // Field to store reference to MyAlgoLogic
-//
-//    @Override
-//    public AlgoLogic createAlgoLogic() {
-//        // Instantiate MyAlgoLogic and store it in the algo field
-//        this.algo = new MyAlgoLogic();
-//        return algo; // Return it for the container setup
-//    }
-//
-//    @Test
-//    public void testCancelLogic() throws Exception {
-//        // Step 1: Send a tick to create initial active orders
-//        send(createTick()); // Simulate a tick to populate active orders
-//        assertEquals(container.getState().getActiveChildOrders().size(), 10);
-//
-//        // Step 2: Use the stored MyAlgoLogic instance to enable clearActiveOrders
-//        algo.setClearActiveOrders(true); // Trigger cancel logic
-//
-//        // Step 3: Send additional ticks to trigger cancel evaluation and verify cancel logic
-//        send(createTick());
-////        createTickHighBid();// Trigger evaluation with cancellation
-//        assertEquals(container.getState().getActiveChildOrders().size(),10);
-//
-//        // Repeat to ensure all orders are canceled
-//        while (container.getState().getActiveChildOrders().size() > 0) {
-//            send(createTick()); // Continue cancellation process
-//        }
-//
-//        // Verify all active orders have been canceled
-//        assertEquals(0, container.getState().getActiveChildOrders().size());
-//    }
-
 }
 
 

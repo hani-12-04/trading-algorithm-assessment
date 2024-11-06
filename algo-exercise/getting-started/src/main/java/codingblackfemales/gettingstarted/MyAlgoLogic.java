@@ -137,14 +137,6 @@ public class MyAlgoLogic implements AlgoLogic {
             return NoAction.NoAction;
         }
     }
-
-    /**
-     * Setter for clearActiveOrders, used primarily for testing purposes.
-     * @param value true to enable clearing active orders, false to disable.
-     */
-    public void setClearActiveOrders(boolean value) {
-        clearActiveOrders = value;
-    }
 }
 
 

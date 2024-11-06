@@ -33,9 +33,8 @@ This repository includes:
 ### Unit Tests (`MyAlgoTest`)
 Tests the algorithm’s logic in isolation, ensuring:
 - **Buy Logic Test**: Verifies buy orders are only placed when conditions match `priceLimit`.
-- **Cancel Logic Test**: Ensures orders are canceled correctly when required.
 
-### Backtest (`MyAlgoBackTest`)
+### Backtests (`MyAlgoBackTest`)
 Simulates the algorithm in a live market environment, validating:
 - **Order Fills**: Checks if expected quantities are filled.
 - **Order Status**: Confirms correct categorisation of partially and fully filled orders.
