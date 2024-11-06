@@ -29,10 +29,6 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
         return new MyAlgoLogic();
     }
 
-//    public void setUp() {
-//        container.getState().getChildOrders().clear(); // Clear the list of child orders to reset state
-//    }
-
     @Test
     public void testTotalFilledQuantity() throws Exception {
         // Step 1: Send initial market tick to create and fill some orders
