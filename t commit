@@ -1,0 +1,116 @@
+[33m2692bcd[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m logic working
+[33mef3ba4a[m added VWAP, buy and cancel are woring, sell not properly working
+[33mdd41dba[m Merge pull request #3 from cbfacademy/main
+[33m29a8520[m adding VWAP calculation
+[33me9c4579[m new changes to ui & algoTest
+[33m3e5dd4c[m Merge pull request #26 from cbfacademy/fix_issue_insert_first_level_order_book
+[33me62209f[m Minor change
+[33m418c9a6[m - Fixed issue with order book update - Fixes issue with linking of entries in the linked list - Fix issue with order book side update - Passive algo logic fix
+[33m07df397[m Merge pull request #24 from cbfacademy/fix_issue_insert_first_level_order_book
+[33md6bf0fd[m completed form - last commit
+[33m11756bf[m Adding a fix for the bug where the order doesn't get booked at the top of the order book refactoring
+[33mbaba69b[m all tests are passing
+[33ma65a200[m all actions are working, tests are passing
+[33m220616b[m all actions are working, but still need to update the sell transition
+[33m640884c[m algo is buying and selling, but not cancel action yet
+[33m7b23198[m revised version - all actions are now working
+[33m1cc60e1[m Algo is running but sell condition not working yet
+[33m1cd6e22[m Merge pull request #14 from cbfacademy/readme-additions
+[33mfefa4b7[m add notes to readme
+[33md6b7dcb[m second commit - commented out override method - made no difference to output
+[33m75373a0[m Merge pull request #2 from cbfacademy/main
+[33m0e1e0bc[m initial commit - added in MyAlgoLogic
+[33mac33b9f[m Merge pull request #10 from cbfacademy/remove-package-lock
+[33m30968ee[m remove package lock
+[33mb0699fd[m Merge pull request #9 from cbfacademy/test-data
+[33me0a0a29[m add test data
+[33m939890b[m Merge pull request #8 from cbfacademy/ui-front-end-readme
+[33m187adb8[m add instructions for ui (and fixes)
+[33m1f9c336[m docs: adds notes on Java configuration
+[33m7db858d[m[33m ([m[1;32mtesting[m[33m)[m Merge pull request #1 from cbfacademy/main
+[33m7af4ea5[m docs: fixes minor typo
+[33mfa0d385[m build: fix logging configuration
+[33m07669c1[m chore: removes straggling build artifacts
+[33m53234ac[m docs: improves setup instructions
+[33m87ff052[m docs: fixes broken links
+[33m950aac0[m Update README.md
+[33mcce0c74[m Merge pull request #5 from cbfacademy/fix-gitignore
+[33mcd84864[m Merge pull request #3 from cbfacademy/add-maven-wrapper
+[33me5d8f1f[m Merge pull request #2 from cbfacademy/update-versions
+[33m5faae13[m Merge pull request #4 from cbfacademy/fix-tests
+[33m6244e29[m chore: preserves resources folder
+[33md61d1b9[m test: fix algo tests
+[33m4fac899[m docs: updates README instructions
+[33m242e0d4[m build: adds Maven Wrapper
+[33m5c5197d[m chore: updates plugin versions
+[33m4a156da[m chore: updates dependency versions
+[33me53c110[m chore: ignores generated market data file
+[33mdfd249e[m chore: ignores all build directories
+[33me23c352[m Update README.md
+[33mbf3d0b4[m Add files via upload
+[33mc094edb[m Update README.md
+[33mecc88c2[m Update README.md
+[33m20779dd[m Update README.md
+[33m444d6f6[m Merge pull request #1 from cbfacademy/issue_34-2024-project-structure
+[33m55ba1ff[m Merge pull request #35 from heswell/ui-front-end-starter
+[33m256d3c9[m add code for front end exercise
+[33md5400f1[m Fixed some issues with market data provider
+[33m8efb345[m Added example market data service.
+[33md8b30aa[m Added latest code with resolved netty issue.
+[33m8a354d1[m Added latest code with resolved netty issue.
+[33mc840f18[m Added latest code with resolved netty issue.
+[33m226f177[m Added latest code with resolved netty issue.
+[33m59bb122[m Added latest code with resolved netty issue.
+[33mdc04155[m Added initial structure of the project.
+[33m41d783d[m Added initial structure of the project.
+[33md436c5e[m Committed small fix and tests to intrusive linkedlist
+[33m3fcfee3[m Update README.md
+[33m4798805[m Update README.md
+[33m88a8f8d[m Update README.md
+[33m82dd26e[m Update README.md
+[33mf7a3fa0[m Update README.md
+[33mb656d38[m Update README.md
+[33m036d3bf[m Merge pull request #5 from chrisjstevo/market-data-provider
+[33m18bc820[m Changed to MyAlgoLogic.java
+[33m6efe188[m [Draft/WIP] Market data provider & generator
+[33me6bd922[m Update README.md
+[33mbc9b3f0[m Update README.md
+[33mb603782[m Update README.md
+[33mec5bbff[m Update README.md
+[33m17aa1ce[m Update README.md
+[33m263cecf[m Update README.md
+[33m91fbf24[m Update README.md
+[33m674b46b[m Update README.md
+[33meaeee71[m Merge pull request #4 from chrisjstevo/market-data-provider
+[33m027ebd1[m Changed folder name
+[33m54a882b[m Changed folder name
+[33mb0b2fbf[m Merge pull request #3 from chrisjstevo/market-data-provider
+[33m65faae6[m [Draft/WIP] Market data provider & generator
+[33mb2b129f[m [Draft/WIP] Market data provider & generator
+[33mfe1ef55[m [Draft/WIP] Market data provider & generator
+[33m06476c7[m [Draft/WIP] Market data provider & generator
+[33m1166d7d[m Added example new algo with test and backtest.
+[33m0e33296[m Added ADDCANCEL algo.
+[33md61ac52[m Fixed the sniper algo so that it can match multiple times.
+[33m93a4200[m Plugged in order channel.
+[33m1f6752e[m Plugged in order channel.
+[33mf71cdfd[m Added ability to match passively based on market data.
+[33mc34dc2d[m Added working match test cases.
+[33mead2cdb[m Reduced logging.
+[33m627af9a[m Fixed algo back test.
+[33m4fc41b8[m 1 test failing, adding logic for market data in backtest
+[33m36c900a[m Added debug for order book.
+[33mfc9f0cb[m Added first working backtest code.
+[33mb31ac91[m Resolved issue with Pending order decoder.
+[33mf3b1965[m Added first semblance of a backtest.
+[33ma046503[m Added market data out channel for order book.
+[33md5b6912[m Added some additional tests around visitors and orderbook
+[33m3c630c4[m Added child order logic to algo.
+[33m0e40af6[m Added bid book example.
+[33m4f8e24b[m Add limit orders as well as market data orders into order book.
+[33m0723b4e[m Add basic market data order book functionality.
+[33m065bf0a[m Added orderbook pieces (not yet complete)
+[33m7ced06c[m Added orderbook first cut.
+[33md2d7f13[m Added backtest project.
+[33ma69ead1[m Add first example of algo project for coding black females.
+[33m98e33ca[m Initial commit

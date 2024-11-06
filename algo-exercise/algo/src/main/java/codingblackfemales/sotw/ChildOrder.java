@@ -14,7 +14,7 @@ public class ChildOrder {
 
     private int state;
 
-    private List<ChildFill> fills = new LinkedList<>();
+    public List<ChildFill> fills = new LinkedList<>();
 
     public ChildOrder(Side side, long orderId, long quantity, long price, int state) {
         this.side = side;
