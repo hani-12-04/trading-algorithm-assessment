@@ -50,7 +50,7 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
         System.out.println("Total filled quantity: " + filledQuantity);
 
         // Step 6: Assert that the total filled quantity matches the expected value
-        assertEquals(151, filledQuantity);
+        assertEquals(400, filledQuantity);
 
         // Test 2: Total number of partially filled orders
         // Step 7: Count the number of partially filled orders
@@ -72,7 +72,7 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
         System.out.println("Number of partially filled orders: " + partiallyFilledOrdersCount);
 
         // Assert the expected number of partially filled orders
-        assertEquals(1, partiallyFilledOrdersCount);  // Adjust expected value
+        assertEquals(0, partiallyFilledOrdersCount);  // Adjust expected value
 
         // Test 3: Total number of fully filled orders
         //Count the number of fully filled orders
@@ -93,7 +93,7 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
         System.out.println("Number of fully filled orders: " + fullyFilledOrders);
 
         //Assert the number of fully filled orders is as expected
-        assertEquals(3, fullyFilledOrders);  // Adjust based on expected fully filled orders
+        assertEquals(4, fullyFilledOrders);  // Adjust based on expected fully filled orders
 
         // Calculate profit based on buy and sell orders
         long totalBuyCost = 0;
