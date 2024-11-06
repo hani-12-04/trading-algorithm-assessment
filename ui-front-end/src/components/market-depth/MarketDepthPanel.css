@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 .market-depth-container {
   width: 100%;
   overflow-x: auto;
@@ -48,59 +47,10 @@
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-=======
-.MarketDepthPanel {
-  width: 80%;
-  border-collapse: collapse;
-  margin-top: 10px;
-  border: 1px solid #ddd;
-  font-size: 12px;
 }
 
 
-/* Styling for table headers and data cells */
-.MarketDepthPanel th, .MarketDepthPanel td {
-  padding: 8px;
-  text-align: center;
-  border: 1px solid black;
-}
 
-/* Blue background for Bid Quantity */
-.bid.quantity {
-  background-color: #007bff;
-  color: white;
-  border: 1px solid black;
-}
-
-/* Red background for Ask Quantity */
-.ask.quantity {
-  background-color: #dc3545;
-  color: white;
-  border: 1px solid black;
-}
-
-/* Styling for Price Cells */
-.price {
-  font-weight: bold;
-  border: 1px solid black;
-}
-
-/* Arrows for price movement in ArrowCell */
-.arrow {
-  margin-left: 8px;
-  font-size: 14px;
-}
-
-/* Green arrow for upward price movement */
-.up {
-  color: green;
-}
-
-/* Red arrow for downward price movement */
-.down {
-  color: red;
->>>>>>> c6e52acc9535d309ac42ea74ea215d0cd3d3e15d
-}
 
 
 

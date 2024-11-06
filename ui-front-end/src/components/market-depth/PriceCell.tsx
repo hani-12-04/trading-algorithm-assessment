@@ -1,5 +1,4 @@
 import React, { useRef, useEffect } from "react";
-import "./PriceCell.css";
 
 interface PriceCellProps {
   price: number;
@@ -31,9 +30,5 @@ export const PriceCell = ({ price, type }: PriceCellProps) => {
       )}
     </td>
   );
-<<<<<<< HEAD
 };
 
-=======
-};
->>>>>>> c6e52acc9535d309ac42ea74ea215d0cd3d3e15d
