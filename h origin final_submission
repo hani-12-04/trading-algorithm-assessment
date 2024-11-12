@@ -1,0 +1,115 @@
+[33mtag final_submission[m
+Tagger: Hani Ali <haniali1204@gmail.com>
+Date:   Wed Nov 6 16:54:58 2024 +0000
+
+Final submission for Algo Assessment
+
+[33mcommit 64189d03802f845f76c0dd342aba2ea75172aacd[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mno-vwap-branch[m[33m, [m[1;33mtag: [m[1;33mfinal_submission[m[33m, [m[1;31morigin/vwap-2-branch[m[33m, [m[1;31morigin/no-vwap-branch[m[33m, [m[1;32mvwap-2-branch[m[33m)[m
+Author: Hani Ali <haniali1204@gmail.com>
+Date:   Wed Nov 6 15:09:11 2024 +0000
+
+    Final form - AlgoLogic with no vwap
+
+[1mdiff --git a/algo-exercise/getting-started/README.md b/algo-exercise/getting-started/README.md[m
+[1mindex e193403..e20c9c9 100644[m
+[1m--- a/algo-exercise/getting-started/README.md[m
+[1m+++ b/algo-exercise/getting-started/README.md[m
+[36m@@ -33,9 +33,8 @@[m [mThis repository includes:[m
+ ### Unit Tests (`MyAlgoTest`)[m
+ Tests the algorithm’s logic in isolation, ensuring:[m
+ - **Buy Logic Test**: Verifies buy orders are only placed when conditions match `priceLimit`.[m
+[31m-- **Cancel Logic Test**: Ensures orders are canceled correctly when required.[m
+ [m
+[31m-### Backtest (`MyAlgoBackTest`)[m
+[32m+[m[32m### Backtests (`MyAlgoBackTest`)[m
+ Simulates the algorithm in a live market environment, validating:[m
+ - **Order Fills**: Checks if expected quantities are filled.[m
+ - **Order Status**: Confirms correct categorisation of partially and fully filled orders.[m
+[1mdiff --git a/algo-exercise/getting-started/src/main/java/codingblackfemales/gettingstarted/MyAlgoLogic.java b/algo-exercise/getting-started/src/main/java/codingblackfemales/gettingstarted/MyAlgoLogic.java[m
+[1mindex 07fc513..89dff3f 100644[m
+[1m--- a/algo-exercise/getting-started/src/main/java/codingblackfemales/gettingstarted/MyAlgoLogic.java[m
+[1m+++ b/algo-exercise/getting-started/src/main/java/codingblackfemales/gettingstarted/MyAlgoLogic.java[m
+[36m@@ -137,14 +137,6 @@[m [mpublic class MyAlgoLogic implements AlgoLogic {[m
+             return NoAction.NoAction;[m
+         }[m
+     }[m
+[31m-[m
+[31m-    /**[m
+[31m-     * Setter for clearActiveOrders, used primarily for testing purposes.[m
+[31m-     * @param value true to enable clearing active orders, false to disable.[m
+[31m-     */[m
+[31m-    public void setClearActiveOrders(boolean value) {[m
+[31m-        clearActiveOrders = value;[m
+[31m-    }[m
+ }[m
+ [m
+ [m
+[1mdiff --git a/algo-exercise/getting-started/src/test/java/codingblackfemales/gettingstarted/AbstractAlgoTest.java b/algo-exercise/getting-started/src/test/java/codingblackfemales/gettingstarted/AbstractAlgoTest.java[m
+[1mindex 46a6136..a71a45a 100644[m
+[1m--- a/algo-exercise/getting-started/src/test/java/codingblackfemales/gettingstarted/AbstractAlgoTest.java[m
+[1m+++ b/algo-exercise/getting-started/src/test/java/codingblackfemales/gettingstarted/AbstractAlgoTest.java[m
+[36m@@ -135,8 +135,4 @@[m [mpublic abstract class AbstractAlgoTest extends SequencerTestCase {[m
+ [m
+         return directBuffer;[m
+     }[m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-[m
+ }[m
+[1mdiff --git a/algo-exercise/getting-started/src/test/java/codingblackfemales/gettingstarted/MyAlgoTest.java b/algo-exercise/getting-started/src/test/java/codingblackfemales/gettingstarted/MyAlgoTest.java[m
+[1mindex b5fcf04..f527ed7 100644[m
+[1m--- a/algo-exercise/getting-started/src/test/java/codingblackfemales/gettingstarted/MyAlgoTest.java[m
+[1m+++ b/algo-exercise/getting-started/src/test/java/codingblackfemales/gettingstarted/MyAlgoTest.java[m
+[36m@@ -38,10 +38,7 @@[m [mpublic class MyAlgoTest extends AbstractAlgoTest {[m
+         send(createTick()); // Simulate a tick with default bid and ask prices[m
+ [m
+         // Verify no more than 10 active child orders[m
+[31m-        assertEquals(container.getState().getActiveChildOrders().size(),10); // maxOrders = 10;[m
+[31m-[m
+[31m-        // Verify the total number of child orders (active + canceled) is exactly 20[m
+[31m-        assertEquals(container.getState().getChildOrders().size(), 20);[m
+[32m+[m[32m        assertEquals(10,container.getState().getActiveChildOrders().size()); // maxOrders = 10;[m
+     }[m
+ [m
+     @Test[m
+[36m@@ -62,39 +59,6 @@[m [mpublic class MyAlgoTest extends AbstractAlgoTest {[m
+         // Check that no active buy orders were created due to the ask price being below the price limit[m
+         assertEquals(0, container.getState().getActiveChildOrders().size());[m
+     }[m
+[31m-[m
+[31m-//    private MyAlgoLogic algo; // Field to store reference to MyAlgoLogic[m
+[31m-//[m
+[31m-//    @Override[m
+[31m-//    public AlgoLogic createAlgoLogic() {[m
+[31m-//        // Instantiate MyAlgoLogic and store it in the algo field[m
+[31m-//        this.algo = new MyAlgoLogic();[m
+[31m-//        return algo; // Return it for the container setup[m
+[31m-//    }[m
+[31m-//[m
+[31m-//    @Test[m
+[31m-//    public void testCancelLogic() throws Exception {[m
+[31m-//        // Step 1: Send a tick to create initial active orders[m
+[31m-//        send(createTick()); // Simulate a tick to populate active orders[m
+[31m-//        assertEquals(container.getState().getActiveChildOrders().size(), 10);[m
+[31m-//[m
+[31m-//        // Step 2: Use the stored MyAlgoLogic instance to enable clearActiveOrders[m
+[31m-//        algo.setClearActiveOrders(true); // Trigger cancel logic[m
+[31m-//[m
+[31m-//        // Step 3: Send additional ticks to trigger cancel evaluation and verify cancel logic[m
+[31m-//        send(createTick());[m
+[31m-////        createTickHighBid();// Trigger evaluation with cancellation[m
+[31m-//        assertEquals(container.getState().getActiveChildOrders().size(),10);[m
+[31m-//[m
+[31m-//        // Repeat to ensure all orders are canceled[m
+[31m-//        while (container.getState().getActiveChildOrders().size() > 0) {[m
+[31m-//            send(createTick()); // Continue cancellation process[m
+[31m-//        }[m
+[31m-//[m
+[31m-//        // Verify all active orders have been canceled[m
+[31m-//        assertEquals(0, container.getState().getActiveChildOrders().size());[m
+[31m-//    }[m
+[31m-[m
+ }[m
+ [m
+ [m

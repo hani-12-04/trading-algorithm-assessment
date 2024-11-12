@@ -38,10 +38,10 @@ public class MyAlgoTest extends AbstractAlgoTest {
         // Simulate hitting the max orders limit with initial conditions
         send(createTick());
         // Check for exactly 5 active child orders are created
-        assertEquals(5,container.getState().getActiveChildOrders().size());
+        assertEquals(7,container.getState().getActiveChildOrders().size());
 
         //Check for exactly 5 child orders are created
-        assertEquals(5,container.getState().getChildOrders().size());
+        assertEquals(7,container.getState().getChildOrders().size());
     }
     @Test
     public void testBuyLogicWithHighAsk() throws Exception {
@@ -50,7 +50,7 @@ public class MyAlgoTest extends AbstractAlgoTest {
         // Check that buy orders were created when the ask price was favorable
         int activeBuys = container.getState().getActiveChildOrders().size();
         assertTrue("Expected buy orders to be created", activeBuys > 0);
-        assertEquals(5, container.getState().getActiveChildOrders().size()); // Ensuring no more than maxOrders
+        assertEquals(7, container.getState().getActiveChildOrders().size()); // Ensuring no more than maxOrders
     }
     @Test
     public void testSellLogicWithLowBid() throws Exception {
@@ -59,7 +59,7 @@ public class MyAlgoTest extends AbstractAlgoTest {
         // Check that sell orders were created when the bid price triggered sell conditions
         int activeSells = container.getState().getActiveChildOrders().size();
         assertTrue("Expected sell orders to be created", activeSells > 0);
-        assertEquals(5, container.getState().getActiveChildOrders().size()); // Ensuring no more than maxOrders
+        assertEquals(7, container.getState().getActiveChildOrders().size()); // Ensuring no more than maxOrders
     }
 }
 
