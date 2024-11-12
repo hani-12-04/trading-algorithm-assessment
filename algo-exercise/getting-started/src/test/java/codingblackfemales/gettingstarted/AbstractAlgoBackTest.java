@@ -137,14 +137,14 @@ public abstract class AbstractAlgoBackTest extends SequencerTestCase {
         // Adding more quantity at the 102 bid level to enable matching
         encoder.bidBookCount(5)
                 .next().price(102L).size(200L)  // Ensuring quantity at 102 to match the sell order
-                .next().price(101L).size(300L)
+                .next().price(102L).size(300L)
                 .next().price(99L).size(250L)
                 .next().price(97L).size(300L)
                 .next().price(94L).size(350L);
 
         encoder.askBookCount(4)
-                .next().price(108L).size(200L)
-                .next().price(113L).size(1000L)
+                .next().price(113L).size(200L)
+                .next().price(118L).size(1000L)
                 .next().price(120L).size(6000L);
 
 

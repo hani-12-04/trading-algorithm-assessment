@@ -23,33 +23,41 @@ import java.util.Set;
 public class MyAlgoLogic implements AlgoLogic {
     private static final Logger logger = LoggerFactory.getLogger(MyAlgoLogic.class);
 
+    // Constants defining trading parameters
     private static final int maxOrders = 7; // The maximum number of active orders allowed
     private static final int quantity = 100; // The number of units per order
 
+    // VWAP thresholds for buy and sell triggers
     private static final double VWAP_BUY_THRESHOLD = 0.99; // Buy if ask is slightly below VWAP
     private static final double VWAP_SELL_THRESHOLD = 0.80; // Sell if bid is close to VWAP
 
+    // Flags to track the first trade and VWAP initialisation
     private boolean firstTrade = true;  // Indicates if we’re placing the first trade
     private boolean vwapInitialised = false; // Flag to track if initial VWAP has been set
 
+    // Flags to manage active orders
     private boolean clearActiveOrders = false;
     private static boolean shouldBuy = true;
 
-    private static final double DEFAULT_VWAP = 100.0; // Default VWAP if no market data is available
+    // Default VWAP value in case of unavailable market data
+    private static final double DEFAULT_VWAP = 100.0;
 
+    // Current VWAP value used for trading decisions
     private double vwap = DEFAULT_VWAP;
 
+    // Map to track order times for managing cancellations
     private static HashMap<Long, LocalTime> orderTimes = new HashMap<>();
 
     @Override
     public Action evaluate(SimpleAlgoState state) {
         try {
+            // Check for any null state or missing child orders and log any issues
             Action action = checkNoAction(state);
             if (action != null) {
                 return action;
             }
 
-            // log the current state of the order book
+            // Log the current state of the order book
             var orderBookAsString = Util.orderBookToString(state);
             logger.info("[MYALGO] The state of the order book is:\n" + orderBookAsString);
 
@@ -58,20 +66,20 @@ public class MyAlgoLogic implements AlgoLogic {
                 initialiseVWAP(state);
                 vwapInitialised = true;
             } else {
-                updateVWAP(state); // Update VWAP after each action
+                updateVWAP(state); // Continuously update VWAP after the first calculation
             }
 
-            // Retrieve the total Order count
+            // Log the total count of all child orders
             var totalOrderCount = state.getChildOrders().size();
             logger.info("[MYALGO] Total child orders: " + totalOrderCount);
 
-            // Get active orders count
+            // Retrieve active orders
             List<ChildOrder> activeOrders = state.getActiveChildOrders();
             int activeOrdersCount = activeOrders.size();
             logger.info("[MYALGO] Active child orders: " + activeOrdersCount);
 
-            // Process unfilled orders and track their times
-            List<ChildOrder> unfilledOrders = state.getChildOrders().stream() // unfilled orders
+            // Process any unfilled orders to track their times in the orderTimes map
+            List<ChildOrder> unfilledOrders = state.getChildOrders().stream()
                     .filter(order -> order.getFilledQuantity() == 0).toList();
 
             for(ChildOrder order : unfilledOrders){
@@ -79,42 +87,19 @@ public class MyAlgoLogic implements AlgoLogic {
                 orderTimes.put(order.getOrderId(), TradingDayClockService.getCurrentTime());
             }
 
-            // Check and cancel orders based on time constraints
-            Set<Long> orderKeys = orderTimes.keySet(); // getting all the orderId's in the hashmap
-            for (long orderId : orderKeys) {
-                if (orderTimes.get(orderId).compareTo(TradingDayClockService.getCurrentTime()) == -1) {
-                    ChildOrder childOrder = activeOrders.stream().filter(order -> order.getOrderId()==orderId).findFirst().orElse(null);
-                    orderTimes.remove(orderId);
-                    if(childOrder.getFilledQuantity() == 0) {
-                        return new CancelChildOrder(childOrder);
-                    }
-                }
+            // Check if any orders have expired based on their times and cancel if needed
+            action = checkShouldCancelByOrderTime(activeOrders);
+            if (action != null) {
+                return action;
             }
 
-            // End of day cancellation
+            // Check if it's the end of the trading day and cancel all remaining orders if so
             action = checkShouldCancelEndOfDay(activeOrders, activeOrdersCount);
             if (action != null) {
                 return action;
             }
 
-            //--- Cancel logic before switching to sell mode ---
-//            if (activeOrdersCount > 0 && TradingDayClockService.isEndOfDay()) {
-//                for (ChildOrder order : activeOrders) {
-//                    if (order != null) {
-//                        logger.info("[MYALGO] Cancelling order: " + order);
-//                        if (activeOrdersCount == 1) {  // Last active order to cancel
-//                            clearActiveOrders = false;
-//                            shouldBuy = false;  // Switch to sell mode after all cancellations
-//                        }
-//                        return new CancelChildOrder(order);  // Cancel one order at a time
-//                    }
-//                }
-//            } else if(TradingDayClockService.isEndOfDay()){
-//                logger.info("[MYALGO] End of evaluation cycle.");
-//                return NoAction.NoAction;
-//            }
-
-            // Get best bid and ask prices, handle potential null values
+            // Retrieve and log the best bid and ask prices, handle potential null values
             BidLevel bestBid = state.getBidAt(0);
             AskLevel bestAsk = state.getAskAt(0);
             if (bestBid == null || bestAsk == null) {
@@ -126,10 +111,14 @@ public class MyAlgoLogic implements AlgoLogic {
             long askPrice = bestAsk.price; // the lowest ask price
             logger.info("[MYALGO] Best Bid: " + bidPrice + ", Best Ask: " + askPrice);
 
+
+            // Calculate buy and sell thresholds based on current VWAP
             double buyThresholdPrice = vwap * VWAP_BUY_THRESHOLD;
             double sellThresholdPrice = vwap * VWAP_SELL_THRESHOLD;
 
-            // Check and place first trade
+            logger.info("[MYALGO] VWAP: " + vwap + ", Buy Threshold: " + buyThresholdPrice + ", Sell Threshold: " + sellThresholdPrice);
+
+            // Execute first trade logic, either buying or selling based on price and VWAP thresholds
             if (firstTrade) {
                 action = checkFirstTrade(askPrice, bidPrice, buyThresholdPrice, sellThresholdPrice);
                 if (action != null) {
@@ -149,43 +138,7 @@ public class MyAlgoLogic implements AlgoLogic {
                 return action;
             }
 
-
-//            if (firstTrade) {
-//                if(askPrice <= buyThresholdPrice) {
-//                    logger.info("[MYALGO] Ask price is below midpoint. Placing BUY order.");
-//                    firstTrade = false;  // Switch off first trade flag after the initial buy
-//                    return new CreateChildOrder(Side.BUY, quantity, askPrice);
-//                } if (bidPrice > sellThresholdPrice) {
-//                    logger.info("[MYALGO] Bid price is below midpoint. Placing SELL order.");
-//                    firstTrade = false;  // Switch off first trade flag after the initial sell
-//                    return new CreateChildOrder(Side.SELL, quantity, bidPrice);
-//                }
-//            } else {
-//                buyThresholdPrice = vwap * VWAP_BUY_THRESHOLD;
-//                sellThresholdPrice = vwap * VWAP_SELL_THRESHOLD;
-//            }
-//
-//            logger.info("[MYALGO] VWAP: " + vwap + ", Buy Threshold: " + buyThresholdPrice + ", Sell Threshold: " + sellThresholdPrice);
-//
-//            // --- Buy Logic ---
-//            if (activeOrdersCount < maxOrders  && askPrice < buyThresholdPrice) {
-//                logger.info("[MYALGO] Ask price is below VWAP buy threshold and buy limit price. Placing BUY order.");
-//                if (activeOrdersCount + 1 >= maxOrders) {
-//                    clearActiveOrders = true; // Begin canceling orders
-//                    logger.info("[MYALGO] Reached buy order limit or fallback buy limit of 10. Starting cancellation.");
-//                }
-//                return new CreateChildOrder(Side.BUY, quantity, askPrice);
-//            }
-//
-//            // ---- Sell Logic ---- //
-//            if (activeOrdersCount < maxOrders && bidPrice >= sellThresholdPrice) {
-//                logger.info("[MYALGO] Bid price is greater than or equal to the sell limit. Placing sell order.");
-//                if (activeOrdersCount >= maxOrders) {
-//                    logger.info("[MYALGO] Max orders reached.End Algo.");
-//                    return NoAction.NoAction;
-//                }
-//                return new CreateChildOrder(Side.SELL, quantity, bidPrice);  // Sell at bid price
-//            }
+            // No action by default if none of the trading conditions are met
             return NoAction.NoAction;
         } catch (Exception e) {
             logger.error("[MYALGO] Error during algo evaluation: " + e.getMessage(), e);
@@ -208,19 +161,19 @@ public class MyAlgoLogic implements AlgoLogic {
     private Action checkFirstTrade(long askPrice, long bidPrice, double buyThresholdPrice, double sellThresholdPrice) {
         if (askPrice <= buyThresholdPrice) {
             logger.info("[MYALGO] Ask price is below midpoint. Placing BUY order.");
-            firstTrade = false;
+            firstTrade = false; // Switch off first trade flag after the initial buy
             return new CreateChildOrder(Side.BUY, quantity, askPrice);
         }
         if (bidPrice > sellThresholdPrice) {
             logger.info("[MYALGO] Bid price is below midpoint. Placing SELL order.");
-            firstTrade = false;
+            firstTrade = false; // Switch off first trade flag after the initial sell
             return new CreateChildOrder(Side.SELL, quantity, bidPrice);
         }
         return null;
     }
 
     private Action checkShouldBuy(long askPrice, double buyThresholdPrice, int activeOrdersCount) {
-        if (shouldBuy && !clearActiveOrders && activeOrdersCount < maxOrders && askPrice < buyThresholdPrice) {
+        if (activeOrdersCount < maxOrders && askPrice < buyThresholdPrice) {
             logger.info("[MYALGO] Ask price is below VWAP buy threshold. Placing BUY order.");
             if (activeOrdersCount + 1 >= maxOrders) {
                 clearActiveOrders = true;
@@ -232,7 +185,7 @@ public class MyAlgoLogic implements AlgoLogic {
     }
 
     private Action checkShouldSell(long bidPrice, double sellThresholdPrice, int activeOrdersCount) {
-        if (!shouldBuy && !clearActiveOrders && activeOrdersCount < maxOrders && bidPrice >= sellThresholdPrice) {
+        if (activeOrdersCount < maxOrders && bidPrice >= sellThresholdPrice) {
             logger.info("[MYALGO] Bid price is above VWAP sell threshold. Placing SELL order.");
             if (activeOrdersCount >= maxOrders) {
                 logger.info("[MYALGO] Max orders reached. End Algo.");
@@ -242,7 +195,22 @@ public class MyAlgoLogic implements AlgoLogic {
         }
         return null;
     }
+    private Action checkShouldCancelByOrderTime(List<ChildOrder> activeOrders) {
+        // Define orderKeys to hold all order IDs in the hashmap
+        Set<Long> orderKeys = orderTimes.keySet(); // getting all the orderId's in the hashmap
 
+        // Iterate over the order IDs in the set
+        for (long orderId : orderKeys) {
+            if (orderTimes.get(orderId).compareTo(TradingDayClockService.getCurrentTime()) == -1) {
+                ChildOrder childOrder = activeOrders.stream().filter(order -> order.getOrderId()==orderId).findFirst().orElse(null);
+                orderTimes.remove(orderId);
+                if(childOrder.getFilledQuantity() == 0) {
+                    return new CancelChildOrder(childOrder);
+                }
+            }
+        }
+        return null;
+    }
     private Action checkShouldCancelEndOfDay(List<ChildOrder> activeOrders, int activeOrdersCount) {
         if (activeOrdersCount > 0 && TradingDayClockService.isEndOfDay()) {
             for (ChildOrder order : activeOrders) {
@@ -255,6 +223,9 @@ public class MyAlgoLogic implements AlgoLogic {
                     return new CancelChildOrder(order);
                 }
             }
+        } else if(TradingDayClockService.isEndOfDay()){
+            logger.info("[MYALGO] End of evaluation cycle");
+            return NoAction.NoAction;
         }
         return null;
     }
@@ -272,7 +243,7 @@ public class MyAlgoLogic implements AlgoLogic {
 
             // Calculate VWAP as the midpoint between best bid and ask prices
             vwap = (double) (bidPrice + askPrice) / 2.0;
-            logger.info("[MYALGO] VWAP initialized using the midpoint of best bid and ask: " + vwap);
+            logger.info("[MYALGO] VWAP initialised using the midpoint of best bid and ask: " + vwap);
         } else {
             // Use default VWAP if either best bid or ask is unavailable
             vwap = DEFAULT_VWAP;

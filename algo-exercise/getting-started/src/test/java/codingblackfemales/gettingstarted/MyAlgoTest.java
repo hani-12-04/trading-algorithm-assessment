@@ -37,7 +37,7 @@ public class MyAlgoTest extends AbstractAlgoTest {
     public void testMaxOrdersLimit() throws Exception {
         // Simulate hitting the max orders limit with initial conditions
         send(createTick());
-        // Check for exactly 5 active child orders are created
+        // Check for exactly 7 active child orders are created
         assertEquals(7,container.getState().getActiveChildOrders().size());
 
         //Check for exactly 5 child orders are created
