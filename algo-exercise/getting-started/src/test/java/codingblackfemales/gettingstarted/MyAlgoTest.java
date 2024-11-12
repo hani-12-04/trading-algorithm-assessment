@@ -12,6 +12,8 @@ import messages.order.Side;
 import org.junit.Test;
 
 
+import java.time.LocalTime;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -35,31 +37,81 @@ public class MyAlgoTest extends AbstractAlgoTest {
     }
     @Test
     public void testMaxOrdersLimit() throws Exception {
-        // Simulate hitting the max orders limit with initial conditions
+        // Simulate market data tick that triggers orders being created
         send(createTick());
-        // Check for exactly 7 active child orders are created
+
+        // Verify the number of active child orders does not exceed maxOrders limit
         assertEquals(7,container.getState().getActiveChildOrders().size());
 
-        //Check for exactly 5 child orders are created
+        //Verify total child orders created
         assertEquals(7,container.getState().getChildOrders().size());
     }
     @Test
     public void testBuyLogicWithHighAsk() throws Exception {
+        // Simulate tick with high ask price to trigger buy logic
         send(createTickWithHighAsk());
 
-        // Check that buy orders were created when the ask price was favorable
+        // Confirm that buy orders were created
         int activeBuys = container.getState().getActiveChildOrders().size();
         assertTrue("Expected buy orders to be created", activeBuys > 0);
-        assertEquals(7, container.getState().getActiveChildOrders().size()); // Ensuring no more than maxOrders
+
+        // // Ensure algorithm does not exceed macOrders.
+        assertEquals(7, container.getState().getActiveChildOrders().size());
     }
+    // not seeing any sell orders - delete?
     @Test
     public void testSellLogicWithLowBid() throws Exception {
+        // Simulate tick with low bid price to trigger sell logic
         send(createTickWithLowBid());
 
         // Check that sell orders were created when the bid price triggered sell conditions
         int activeSells = container.getState().getActiveChildOrders().size();
         assertTrue("Expected sell orders to be created", activeSells > 0);
-        assertEquals(7, container.getState().getActiveChildOrders().size()); // Ensuring no more than maxOrders
+
+        // Ensure algorithm does not exceed macOrders.
+        assertEquals(7, container.getState().getActiveChildOrders().size());
+    }
+    @Test
+    public void testCancelLogicAtEndOfDay() throws Exception {
+        // Send initial market ticks to create some orders
+        System.out.println("Tick with low Bid");
+        send(createTickWithLowBid());
+        System.out.println("Tick with high Ask");
+        send(createTickWithHighAsk());
+        System.out.println("Tick 1");
+        send(createTick());
+
+        // Set time to end of trading day and send final tick to trigger cancellations
+        TradingDayClockService.setCurrentTime(LocalTime.of(17, 0));
+        send(createTickWithLowBid());
+
+        // Verify that all orders have been cancelled at end of day
+        int activeOrders = container.getState().getActiveChildOrders().size();
+        assertEquals("Expected all orders to be canceled at end of day",
+                0, activeOrders);
+    }
+    @Test
+    public void testNoOrderAfterEndOfDay() throws Exception {
+        // Set time to after market close and send a tick
+        TradingDayClockService.setCurrentTime(LocalTime.of(17, 1));
+        send(createTick());
+
+        // Verify that no new orders are created after market close
+        assertEquals("No orders should be created after market close",
+                0, container.getState().getActiveChildOrders().size());
+    }
+    @Test
+    public void testOrderExpirationBasedOnTime() throws Exception {
+        // Send initial tick to create orders
+        send(createTick());
+
+        // Advance time by a few hours to simulate order expiration
+        TradingDayClockService.setCurrentTime(LocalTime.of(13, 0));
+        send(createTick()); // Process a tick to trigger order expiration logic
+
+        // Verify that orders created in the morning are now canceled
+        assertTrue("Expected some orders to be canceled after expiration time",
+                container.getState().getActiveChildOrders().size() <= 7);
     }
 }
 

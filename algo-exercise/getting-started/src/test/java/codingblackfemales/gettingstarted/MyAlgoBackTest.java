@@ -97,7 +97,7 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
         System.out.println("Number of fully filled orders: " + fullyFilledOrders);
 
         //Assert the number of fully filled orders is as expected
-//        assertEquals(4, fullyFilledOrders);  // Adjust based on expected fully filled orders
+        assertEquals(5, fullyFilledOrders);  // Adjust based on expected fully filled orders
 
         // Calculate profit based on buy and sell orders
         long totalBuyCost = 0;
