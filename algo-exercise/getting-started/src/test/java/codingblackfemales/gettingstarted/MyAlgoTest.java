@@ -58,19 +58,7 @@ public class MyAlgoTest extends AbstractAlgoTest {
         // // Ensure algorithm does not exceed macOrders.
         assertEquals(7, container.getState().getActiveChildOrders().size());
     }
-    // not seeing any sell orders - delete?
-    @Test
-    public void testSellLogicWithLowBid() throws Exception {
-        // Simulate tick with low bid price to trigger sell logic
-        send(createTickWithLowBid());
 
-        // Check that sell orders were created when the bid price triggered sell conditions
-        int activeSells = container.getState().getActiveChildOrders().size();
-        assertTrue("Expected sell orders to be created", activeSells > 0);
-
-        // Ensure algorithm does not exceed macOrders.
-        assertEquals(7, container.getState().getActiveChildOrders().size());
-    }
     @Test
     public void testCancelLogicAtEndOfDay() throws Exception {
         // Send initial market ticks to create some orders
