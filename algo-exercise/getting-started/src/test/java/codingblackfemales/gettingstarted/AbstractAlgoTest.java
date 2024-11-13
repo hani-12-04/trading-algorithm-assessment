@@ -87,8 +87,8 @@ public abstract class AbstractAlgoTest extends SequencerTestCase {
         encoder.instrumentId(123L);
 
         encoder.askBookCount(3)
-                .next().price(120L).size(101L)  // Higher ask price to test buy threshold logic
-                .next().price(125L).size(200L)
+                .next().price(120L).size(101L)  // Higher ask price to test buy threshold logic,
+                .next().price(125L).size(200L)  // but this flips over to the bid in output
                 .next().price(130L).size(5000L);
 
         encoder.bidBookCount(3)

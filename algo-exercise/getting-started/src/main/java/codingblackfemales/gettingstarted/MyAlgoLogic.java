@@ -31,7 +31,7 @@ public class MyAlgoLogic implements AlgoLogic {
     private static final double VWAP_BUY_THRESHOLD = 0.99; // Buy if ask below VWAP
     private static final double VWAP_SELL_THRESHOLD = 0.80; // Sell if bid is above to VWAP
 
-    // Flags to track the first trade and VWAP initialisation
+    // Flags to track VWAP initialisation
     private boolean vwapInitialised = false; // Flag to track if initial VWAP has been set
 
     // Default VWAP value in case of unavailable market data
@@ -46,7 +46,7 @@ public class MyAlgoLogic implements AlgoLogic {
     @Override
     public Action evaluate(SimpleAlgoState state) {
         try {
-            // Check for any null state or missing child orders and log any issues
+            // Check if state or child orders are null
             Action action = checkNoAction(state);
             if (action != null) {
                 return action;
@@ -65,6 +65,7 @@ public class MyAlgoLogic implements AlgoLogic {
             int activeOrdersCount = activeOrders.size();
             logger.info("[MYALGO] Active child orders: " + activeOrdersCount);
 
+            // track unfilled orders by recording the time it was created in a HashMap.
             storeUnfilledOrders(state);
 
             // Check if it's the end of the trading day and cancel all remaining orders if so
@@ -73,7 +74,7 @@ public class MyAlgoLogic implements AlgoLogic {
                 return action;
             }
 
-            // Check if any orders have expired based on their times and cancel if needed
+            // Check each of the order's time and cancel orders that have been unfilled for too long
             action = checkShouldCancelByOrderTime(activeOrders);
             if (action != null) {
                 return action;
@@ -140,15 +141,15 @@ public class MyAlgoLogic implements AlgoLogic {
         }
         return null;
     }
-
+    // get all the child orders and filter the child order for any order that has a filled quantity of 0
     private void storeUnfilledOrders(SimpleAlgoState state){
     // Process any unfilled orders to track their times in the orderTimes map
     List<ChildOrder> unfilledOrders = state.getChildOrders().stream()
             .filter(order -> order.getFilledQuantity() == 0).toList();
-
+            // go through all the unfilled orders and check if they already exist in the hashmap
             for(ChildOrder order : unfilledOrders) {
                 if (orderTimeHashmap.containsKey(order.getOrderId())) {
-                    continue;
+                    continue; //skip and go to the next order
                 }
                 orderTimeHashmap.put(order.getOrderId(), TradingDayClockService.getCurrentTime());
             }
@@ -238,12 +239,14 @@ public class MyAlgoLogic implements AlgoLogic {
      * the algorithm reacts to changes in bid and ask quantities.
      */
     private void updateVWAP(SimpleAlgoState state) {
+        //initialise variables
         long totalBidQuantity = 0;
         long totalAskQuantity = 0;
         long bidPriceQuantitySum = 0;
         long askPriceQuantitySum = 0;
 
         int bidLevels = state.getBidLevels();
+        // loop through each bid level in the order book
         for (int i = 0; i < bidLevels; i++) {
             BidLevel bid = state.getBidAt(i);
             if (bid != null) {

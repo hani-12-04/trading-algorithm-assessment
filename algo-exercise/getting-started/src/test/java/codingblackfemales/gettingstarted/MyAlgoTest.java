@@ -55,22 +55,23 @@ public class MyAlgoTest extends AbstractAlgoTest {
         int activeBuys = container.getState().getActiveChildOrders().size();
         assertTrue("Expected buy orders to be created", activeBuys > 0);
 
-        // // Ensure algorithm does not exceed macOrders.
+        // // Ensure algorithm does not exceed maxOrders.
         assertEquals(7, container.getState().getActiveChildOrders().size());
     }
 
     @Test
     public void testCancelLogicAtEndOfDay() throws Exception {
-        // Send initial market ticks to create some orders
-        System.out.println("Tick with low Bid");
-        send(createTickWithLowBid());
-        System.out.println("Tick with high Ask");
-        send(createTickWithHighAsk());
+        // Send three ticks with different market data to generate some active orders.
         System.out.println("Tick 1");
+        send(createTickWithLowBid());
+        System.out.println("Tick 2");
+        send(createTickWithHighAsk());
+        System.out.println("Tick 3");
         send(createTick());
 
-        // Set time to end of trading day and send final tick to trigger cancellations
+        // Set time to end of trading day and send final tick to trigger end-of day cancellations
         TradingDayClockService.setCurrentTime(LocalTime.of(17, 0));
+        System.out.println("Tick 4");
         send(createTickWithLowBid());
 
         // Verify that all orders have been cancelled at end of day
@@ -91,13 +92,17 @@ public class MyAlgoTest extends AbstractAlgoTest {
     @Test
     public void testOrderExpirationBasedOnTime() throws Exception {
         // Send initial tick to create orders
+        System.out.println("Tick 1");
         send(createTick());
 
-        // Advance time by a few hours to simulate order expiration
+        // Move the clock forward to 1:00 PM to simulate a few hours passing
         TradingDayClockService.setCurrentTime(LocalTime.of(13, 0));
+
+        System.out.println("Tick 2");
+        // Send another tick to check if any orders have expired based on the new time.
         send(createTick()); // Process a tick to trigger order expiration logic
 
-        // Verify that orders created in the morning are now canceled
+        // Verify that orders created in the morning are now cancelled
         assertTrue("Expected some orders to be canceled after expiration time",
                 container.getState().getActiveChildOrders().size() <= 7);
     }
